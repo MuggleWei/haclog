@@ -163,6 +163,22 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
 									   ...);
 
+/**
+ * @brief format primitive to string (include '\0')
+ *
+ * @param bytes_buf  bytes buffer pointer
+ * @param buf        buffer store the result
+ * @param bufsize    size of buffer
+ *
+ * @return 
+ *   - on success, return the number of characters printed (excluding '\0')
+ *   - on nothing format, return 0
+ *   - on failed, return -1 and set haclog last error
+ */
+HACLOG_EXPORT
+int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf, char *buf,
+								   size_t bufsize);
+
 HACLOG_EXTERN_C_END
 
 #endif // !HACLOG_VSPRINTF_H_

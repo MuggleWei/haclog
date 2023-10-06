@@ -915,15 +915,15 @@ typedef struct haclog_str_cache {
 
 #define HACLOG_MAX_STR_CACHE 128
 
-#define HACLOG_SERIALIZE_WRITE(p, num)                                 \
-	static_assert(sizeof(num) <= sizeof(haclog_serialize_placeholder), \
-				  "value not le sizeof(placeholder)");                 \
-	memcpy(p, &num, sizeof(num));                                      \
+#define HACLOG_SERIALIZE(p, v)                                       \
+	static_assert(sizeof(v) <= sizeof(haclog_serialize_placeholder), \
+				  "value not le sizeof(placeholder)");               \
+	memcpy(p, &v, sizeof(v));                                        \
 	p += sizeof(haclog_serialize_placeholder);
 
 #define HACLOG_SERIALIZE_VA_ARG(p, type) \
 	type v = va_arg(args, type);         \
-	HACLOG_SERIALIZE_WRITE(p, v);
+	HACLOG_SERIALIZE(p, v);
 
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
@@ -970,12 +970,14 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 
 		if (spec->width == HACLOG_PRINTF_SPEC_DYNAMIC) {
 			int width = va_arg(args, int);
-			HACLOG_SERIALIZE_WRITE(p, width);
+			HACLOG_SERIALIZE(p, width);
 		}
 
 		if (spec->precision == HACLOG_PRINTF_SPEC_DYNAMIC) {
 			precision = va_arg(args, int);
-			HACLOG_SERIALIZE_WRITE(p, precision);
+			HACLOG_SERIALIZE(p, precision);
+		} else {
+			precision = spec->precision;
 		}
 
 		switch (spec->fmt_type) {
@@ -986,7 +988,7 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 				str_cache[n_str_idx].slen = HACLOG_ROUND_TO_2POWX(
 					str_cache[n_str_idx].copy_slen + 1, 8);
 
-				HACLOG_SERIALIZE_WRITE(p, extra_len);
+				HACLOG_SERIALIZE(p, extra_len);
 				extra_len += str_cache[n_str_idx].slen;
 			} else {
 				const char *s = va_arg(args, const char *);
@@ -1009,7 +1011,7 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 				str_cache[n_str_idx].slen = slen;
 				++n_str_idx;
 
-				HACLOG_SERIALIZE_WRITE(p, extra_len);
+				HACLOG_SERIALIZE(p, extra_len);
 				extra_len += slen;
 			}
 
@@ -1035,20 +1037,20 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 		case HACLOG_FT_CHAR:
 		case HACLOG_FT_BYTE: {
 			char v = (char)va_arg(args, int);
-			HACLOG_SERIALIZE_WRITE(p, v);
+			HACLOG_SERIALIZE(p, v);
 		} break;
 		case HACLOG_FT_UCHAR:
 		case HACLOG_FT_UBYTE: {
 			unsigned char v = (unsigned char)va_arg(args, unsigned int);
-			HACLOG_SERIALIZE_WRITE(p, v);
+			HACLOG_SERIALIZE(p, v);
 		} break;
 		case HACLOG_FT_SHORT: {
 			short v = (short)va_arg(args, int);
-			HACLOG_SERIALIZE_WRITE(p, v);
+			HACLOG_SERIALIZE(p, v);
 		} break;
 		case HACLOG_FT_USHORT: {
 			unsigned short v = (unsigned short)va_arg(args, unsigned int);
-			HACLOG_SERIALIZE_WRITE(p, v);
+			HACLOG_SERIALIZE(p, v);
 		} break;
 		case HACLOG_FT_INT: {
 			HACLOG_SERIALIZE_VA_ARG(p, int);
@@ -1108,4 +1110,250 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 		haclog_atomic_store(&bytes_buf->w, w_const_args + primitive->param_size,
 							haclog_memory_order_release);
 	}
+}
+
+#define HACLOG_MAX_FMT_ITEM 128
+
+static int haclog_printf_primitive_format_str(const char *fmt,
+											  haclog_printf_spec_t *spec,
+											  int width, int precision,
+											  const char *s, char *buf,
+											  int buf_remain)
+{
+	char fmt_str[HACLOG_MAX_FMT_ITEM];
+	int len = spec->pos_end - spec->pos_begin;
+	if (len >= (int)sizeof(fmt_str)) {
+		len = (int)sizeof(fmt_str) - 1;
+	}
+	memcpy(fmt_str, fmt + spec->pos_begin, len);
+	fmt_str[len] = '\0';
+
+	if (width > 0) {
+		if (precision > 0) {
+			return snprintf(buf, buf_remain, fmt_str, width, precision, s);
+		} else {
+			return snprintf(buf, buf_remain, fmt_str, width, s);
+		}
+	} else {
+		if (precision > 0) {
+			return snprintf(buf, buf_remain, fmt_str, precision, s);
+		} else {
+			return snprintf(buf, buf_remain, fmt_str, s);
+		}
+	}
+}
+
+#define HACLOG_FORMAT_VAL_FUNC(name, type, v)                                  \
+	static int haclog_printf_primitive_format_##name(                          \
+		const char *fmt, haclog_printf_spec_t *spec, int width, int precision, \
+		type v, char *buf, int buf_remain)                                     \
+	{                                                                          \
+		char fmt_str[HACLOG_MAX_FMT_ITEM];                                     \
+		int len = spec->pos_end - spec->pos_begin;                             \
+		if (len >= (int)sizeof(fmt_str)) {                                     \
+			len = (int)sizeof(fmt_str) - 1;                                    \
+		}                                                                      \
+		memcpy(fmt_str, fmt + spec->pos_begin, len);                           \
+		fmt_str[len] = '\0';                                                   \
+                                                                               \
+		if (width > 0) {                                                       \
+			if (precision > 0) {                                               \
+				return snprintf(buf, buf_remain, fmt_str, width, precision,    \
+								v);                                            \
+			} else {                                                           \
+				return snprintf(buf, buf_remain, fmt_str, width, v);           \
+			}                                                                  \
+		} else {                                                               \
+			if (precision > 0) {                                               \
+				return snprintf(buf, buf_remain, fmt_str, precision, v);       \
+			} else {                                                           \
+				return snprintf(buf, buf_remain, fmt_str, v);                  \
+			}                                                                  \
+		}                                                                      \
+	}
+
+#define HACLOG_FORMAT_VAL_CALL(name, v)                                    \
+	haclog_printf_primitive_format_##name(primitive->fmt, spec, width,     \
+										  precision, v, buf + total_bytes, \
+										  buf_remain);
+
+HACLOG_FORMAT_VAL_FUNC(double, double, v)
+HACLOG_FORMAT_VAL_FUNC(long_double, long double, v)
+HACLOG_FORMAT_VAL_FUNC(size, size_t, v)
+HACLOG_FORMAT_VAL_FUNC(ptr, void *, v)
+HACLOG_FORMAT_VAL_FUNC(ptrdiff, ptrdiff_t, v)
+HACLOG_FORMAT_VAL_FUNC(char, char, v)
+HACLOG_FORMAT_VAL_FUNC(uchar, unsigned char, v)
+HACLOG_FORMAT_VAL_FUNC(short, short, v)
+HACLOG_FORMAT_VAL_FUNC(ushort, unsigned short, v)
+HACLOG_FORMAT_VAL_FUNC(int, int, v)
+HACLOG_FORMAT_VAL_FUNC(long_int, long int, v)
+HACLOG_FORMAT_VAL_FUNC(u_long_int, unsigned long int, v)
+HACLOG_FORMAT_VAL_FUNC(long_long_int, long long int, v)
+HACLOG_FORMAT_VAL_FUNC(u_long_long_int, unsigned long long int, v)
+
+#define HACLOG_DESERIALIZE(p, v)                                     \
+	static_assert(sizeof(v) <= sizeof(haclog_serialize_placeholder), \
+				  "value not le sizeof(placeholder)");               \
+	memcpy(&v, p, sizeof(v));                                        \
+	p += sizeof(haclog_serialize_placeholder);
+
+#define HACLOG_DESERIALIZE_VA_ARG(p, type, v) \
+	type v;                                   \
+	HACLOG_DESERIALIZE(p, v);
+
+int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf, char *buf,
+								   size_t bufsize)
+{
+	if (bufsize < 1) {
+		haclog_set_error(HACLOG_ERR_ARGUMENTS);
+		return -1;
+	}
+
+	haclog_atomic_int w =
+		haclog_atomic_load(&bytes_buf->w, haclog_memory_order_acquire);
+	if (bytes_buf->r == w) {
+		return 0;
+	}
+
+	if (bytes_buf->capacity - bytes_buf->r <
+		(int)sizeof(haclog_serialize_placeholder)) {
+		bytes_buf->r = 0;
+	}
+
+	haclog_serialize_hdr_t *hdr =
+		(haclog_serialize_hdr_t *)haclog_bytes_buffer_get(bytes_buf,
+														  bytes_buf->r);
+
+	int total_bytes = 0;
+	unsigned int fmt_pos = 0;
+	int buf_remain = (int)bufsize - 1;
+	char *p = haclog_bytes_buffer_get(bytes_buf, hdr->pos_const);
+	int n = 0;
+
+	haclog_printf_primitive_t *primitive = hdr->primitive;
+	for (unsigned int i = 0; i < primitive->num_params; ++i) {
+		haclog_printf_spec_t *spec = primitive->specs + i;
+		if (spec->pos_begin > fmt_pos) {
+			n = spec->pos_begin - fmt_pos;
+			if (n > buf_remain) {
+				n = buf_remain;
+			}
+
+			if (n > 0) {
+				memcpy(buf + total_bytes, primitive->fmt + fmt_pos, n);
+
+				total_bytes += n;
+				buf_remain -= n;
+			}
+
+			fmt_pos = spec->pos_end;
+		}
+
+		int width = 0;
+		if (spec->width == HACLOG_PRINTF_SPEC_DYNAMIC) {
+			HACLOG_DESERIALIZE(p, width);
+		}
+
+		int precision = 0;
+		if (spec->precision == HACLOG_PRINTF_SPEC_DYNAMIC) {
+			HACLOG_DESERIALIZE(p, precision);
+		}
+
+		n = 0;
+		switch (spec->fmt_type) {
+		case HACLOG_FT_STR: {
+			unsigned long offset = 0;
+			HACLOG_DESERIALIZE(p, offset);
+			const char *s =
+				haclog_bytes_buffer_get(bytes_buf, hdr->pos_str + offset);
+			n = haclog_printf_primitive_format_str(primitive->fmt, spec, width,
+												   precision, s,
+												   buf + total_bytes,
+												   buf_remain);
+		} break;
+		case HACLOG_FT_DOUBLE: {
+			HACLOG_DESERIALIZE_VA_ARG(p, double, v);
+			n = HACLOG_FORMAT_VAL_CALL(double, v);
+		} break;
+		case HACLOG_FT_LONG_DOUBLE: {
+			long double v = 0.0;
+			memcpy(&v, p, sizeof(v));
+			p += sizeof(long double);
+			n = HACLOG_FORMAT_VAL_CALL(long_double, v);
+		} break;
+		case HACLOG_FT_SIZE: {
+			HACLOG_DESERIALIZE_VA_ARG(p, size_t, v);
+			n = HACLOG_FORMAT_VAL_CALL(size, v);
+		} break;
+		case HACLOG_FT_PTR: {
+			HACLOG_DESERIALIZE_VA_ARG(p, void *, v);
+			n = HACLOG_FORMAT_VAL_CALL(ptr, v);
+		} break;
+		case HACLOG_FT_PTRDIFF: {
+			HACLOG_DESERIALIZE_VA_ARG(p, ptrdiff_t, v);
+			n = HACLOG_FORMAT_VAL_CALL(ptrdiff, v);
+		} break;
+		case HACLOG_FT_CHAR:
+		case HACLOG_FT_BYTE: {
+			HACLOG_DESERIALIZE_VA_ARG(p, char, v);
+			n = HACLOG_FORMAT_VAL_CALL(char, v);
+		} break;
+		case HACLOG_FT_UCHAR:
+		case HACLOG_FT_UBYTE: {
+			HACLOG_DESERIALIZE_VA_ARG(p, unsigned char, v);
+			n = HACLOG_FORMAT_VAL_CALL(uchar, v);
+		} break;
+		case HACLOG_FT_SHORT: {
+			HACLOG_DESERIALIZE_VA_ARG(p, short, v);
+			n = HACLOG_FORMAT_VAL_CALL(short, v);
+		} break;
+		case HACLOG_FT_USHORT: {
+			HACLOG_DESERIALIZE_VA_ARG(p, unsigned short, v);
+			n = HACLOG_FORMAT_VAL_CALL(ushort, v);
+		} break;
+		case HACLOG_FT_INT: {
+			HACLOG_DESERIALIZE_VA_ARG(p, int, v);
+			n = HACLOG_FORMAT_VAL_CALL(int, v);
+		} break;
+		case HACLOG_FT_LONG: {
+			HACLOG_DESERIALIZE_VA_ARG(p, long int, v);
+			n = HACLOG_FORMAT_VAL_CALL(long_int, v);
+		} break;
+		case HACLOG_FT_ULONG: {
+			HACLOG_DESERIALIZE_VA_ARG(p, unsigned long int, v);
+			n = HACLOG_FORMAT_VAL_CALL(u_long_int, v);
+		} break;
+		case HACLOG_FT_LONGLONG: {
+			HACLOG_DESERIALIZE_VA_ARG(p, long long int, v);
+			n = HACLOG_FORMAT_VAL_CALL(long_long_int, v);
+		} break;
+		case HACLOG_FT_ULONGLONG: {
+			HACLOG_DESERIALIZE_VA_ARG(p, unsigned long long int, v);
+			n = HACLOG_FORMAT_VAL_CALL(u_long_long_int, v);
+		} break;
+		default: {
+			// TODO: assert false
+		} break;
+		}
+
+		total_bytes += n;
+		buf_remain -= n;
+	}
+
+	if (fmt_pos != primitive->fmt_len) {
+		n = primitive->fmt_len - fmt_pos;
+		if (n > buf_remain) {
+			n = buf_remain;
+		}
+
+		memcpy(buf + total_bytes, primitive->fmt + fmt_pos, n);
+
+		total_bytes += n;
+		buf_remain -= n;
+	}
+
+	buf[total_bytes] = '\0';
+
+	return total_bytes;
 }
