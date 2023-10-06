@@ -1,0 +1,21 @@
+/******************************************************************************
+ *  @file         haclog_config.h.in
+ *  @author       Muggle Wei
+ *  @email        mugglewei@gmail.com
+ *  @date         2023-09-26
+ *  @copyright    Copyright 2023 Muggle Wei
+ *  @license      MIT License
+ *  @brief        haclog config
+ *****************************************************************************/
+
+#ifndef HACLOG_CONFIG_IN_H_
+#define HACLOG_CONFIG_IN_H_
+
+#cmakedefine HACLOG_VERSION "@HACLOG_VERSION@"
+
+#cmakedefine HACLOG_USE_DLL
+
+#cmakedefine01 HACLOG_HAVE_BACKTRACE
+#cmakedefine HACLOG_BACKTRACE_HEADER <@HACLOG_BACKTRACE_HEADER@>
+
+#endif // !HACLOG_CONFIG_IN_H_
