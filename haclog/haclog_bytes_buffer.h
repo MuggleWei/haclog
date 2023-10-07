@@ -48,17 +48,18 @@ void haclog_bytes_buffer_free(haclog_bytes_buffer_t *bytes_buf);
  *
  * @param bytes_buf  bytes buffer pointer
  * @param num_bytes  number of required bytes
- * @param p_r        reader position pointer
+ * @param r          reader position pointer
  * @param w          writer position
  *
  * @return
  *   - on success, return write position
  *   - on failed, return -1 and set haclog last error
+ *   - on need wait reader move, return -2
  */
 HACLOG_EXPORT
 haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 										   haclog_atomic_int num_bytes,
-										   haclog_atomic_int *p_r,
+										   haclog_atomic_int r,
 										   haclog_atomic_int w);
 
 /**

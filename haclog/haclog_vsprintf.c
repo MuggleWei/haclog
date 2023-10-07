@@ -940,19 +940,37 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	haclog_atomic_int w_str = 0;
 	char *p = NULL;
 
-	w_hdr = haclog_bytes_buffer_w_fc(bytes_buf, hdr_size, &r, w);
-	if (w_hdr == -1) {
-		haclog_assert();
-		return;
-	}
+	do {
+		w_hdr = haclog_bytes_buffer_w_fc(bytes_buf, hdr_size, r, w);
+		if (w_hdr >= 0) {
+			break;
+		}
+
+		if (w_hdr == -1) {
+			haclog_assert();
+			return;
+		}
+
+		haclog_thread_yield();
+		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
+	} while (1);
 	w = w_hdr + hdr_size;
 
-	w_const_args =
-		haclog_bytes_buffer_w_fc(bytes_buf, primitive->param_size, &r, w);
-	if (w_const_args == -1) {
-		haclog_assert();
-		return;
-	}
+	do {
+		w_const_args =
+			haclog_bytes_buffer_w_fc(bytes_buf, primitive->param_size, r, w);
+		if (w_const_args >= 0) {
+			break;
+		}
+
+		if (w_const_args == -1) {
+			haclog_assert();
+			return;
+		}
+
+		haclog_thread_yield();
+		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
+	} while (1);
 	w = w_const_args + primitive->param_size;
 
 	p = haclog_bytes_buffer_get(bytes_buf, w_const_args);
@@ -1079,11 +1097,20 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	va_end(args);
 
 	// serialize string arguments
-	w_str = haclog_bytes_buffer_w_fc(bytes_buf, extra_len, &r, w);
-	if (w_str == -1) {
-		haclog_assert();
-		return;
-	}
+	do {
+		w_str = haclog_bytes_buffer_w_fc(bytes_buf, extra_len, r, w);
+		if (w_str >= 0) {
+			break;
+		}
+
+		if (w_str == -1) {
+			haclog_assert();
+			return;
+		}
+
+		haclog_thread_yield();
+		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
+	} while (1);
 	p = haclog_bytes_buffer_get(bytes_buf, w_str);
 
 	for (unsigned int i = 0; i < n_str_idx; ++i) {
@@ -1107,15 +1134,12 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	hdr->primitive = primitive;
 
 	// move writer
-	haclog_thread_fence(haclog_memory_order_release);
 	if (extra_len > 0) {
-		// haclog_atomic_store(&bytes_buf->w, w_str + extra_len,
-		//                     haclog_memory_order_release);
-		bytes_buf->w = w_str + extra_len;
+		haclog_atomic_store(&bytes_buf->w, w_str + extra_len,
+							haclog_memory_order_release);
 	} else {
-		// haclog_atomic_store(&bytes_buf->w, w_const_args + primitive->param_size,
-		//                     haclog_memory_order_release);
-		bytes_buf->w = w_const_args + primitive->param_size;
+		haclog_atomic_store(&bytes_buf->w, w_const_args + primitive->param_size,
+							haclog_memory_order_release);
 	}
 }
 

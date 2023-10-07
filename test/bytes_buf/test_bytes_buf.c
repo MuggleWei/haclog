@@ -24,22 +24,16 @@ void test_bytes_buf_case1()
 	haclog_atomic_int w_const_args = 0;
 	haclog_atomic_int w_str = 0;
 
-	fprintf(stdout, "w=%d, r=%d\n", w, r);
-
-	w_hdr = haclog_bytes_buffer_w_fc(bytes_buf, hdr_size, &r, w);
-	TEST_ASSERT_NOT_EQUAL(w_hdr, -1);
+	w_hdr = haclog_bytes_buffer_w_fc(bytes_buf, hdr_size, r, w);
+	TEST_ASSERT_EQUAL(w_hdr, w);
 	w = w_hdr + hdr_size;
-	fprintf(stdout, "w=%d, r=%d\n", w, r);
 
-	w_const_args = haclog_bytes_buffer_w_fc(bytes_buf, 40, &r, w);
-	TEST_ASSERT_NOT_EQUAL(w_hdr, -1);
+	w_const_args = haclog_bytes_buffer_w_fc(bytes_buf, 40, r, w);
+	TEST_ASSERT_EQUAL(w_const_args, w);
 	w = w_const_args + 40;
-	fprintf(stdout, "w=%d, r=%d\n", w, r);
 
-	w_const_args = haclog_bytes_buffer_w_fc(bytes_buf, 128, &r, w);
-	TEST_ASSERT_NOT_EQUAL(w_hdr, -1);
-	w = w_const_args + 128;
-	fprintf(stdout, "w=%d, r=%d\n", w, r);
+	w_str = haclog_bytes_buffer_w_fc(bytes_buf, 128, r, w);
+	TEST_ASSERT_EQUAL(w_str, -2);
 
 	haclog_bytes_buffer_free(bytes_buf);
 }
@@ -48,7 +42,7 @@ int main()
 {
 	UNITY_BEGIN();
 
-	// RUN_TEST(test_bytes_buf_case1);
+	RUN_TEST(test_bytes_buf_case1);
 
 	return UNITY_END();
 }
