@@ -64,4 +64,6 @@ void haclog_context_set_bytes_buf_size(unsigned long bufsize);
 HACLOG_EXPORT
 unsigned long haclog_context_get_bytes_buf_size();
 
+HACLOG_EXTERN_C_END
+
 #endif // !HACLOG_CONTEXT_H_
