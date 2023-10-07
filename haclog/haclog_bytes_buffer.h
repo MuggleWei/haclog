@@ -89,6 +89,14 @@ HACLOG_EXPORT
 char *haclog_bytes_buffer_get(haclog_bytes_buffer_t *bytes_buf,
 							  haclog_atomic_int pos);
 
+/**
+ * @brief wait all cache has been handle
+ *
+ * @param bytes_buf  bytes buffer pointer
+ */
+HACLOG_EXPORT
+void haclog_bytes_buffer_join(haclog_bytes_buffer_t *bytes_buf);
+
 HACLOG_EXTERN_C_END
 
 #endif // !HACLOG_BYTES_BUFFER_H_

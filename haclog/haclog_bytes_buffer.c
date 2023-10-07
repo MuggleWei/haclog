@@ -116,8 +116,8 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 						 */
 						return w;
 					} else {
-						if (*p_r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL <
-							num_bytes) {
+						cw = *p_r - w - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL;
+						if (cw < num_bytes) {
 							continue;
 						}
 						/*
@@ -135,7 +135,7 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 }
 
 int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
-								haclog_atomic_int pos)
+							   haclog_atomic_int pos)
 {
 	if (pos < 0 || pos >= bytes_buf->capacity) {
 		haclog_set_error(HACLOG_ERR_ARGUMENTS);
@@ -156,4 +156,16 @@ char *haclog_bytes_buffer_get(haclog_bytes_buffer_t *bytes_buf,
 	}
 
 	return bytes_buf->buffer + pos;
+}
+
+void haclog_bytes_buffer_join(haclog_bytes_buffer_t *bytes_buf)
+{
+	do {
+		haclog_atomic_int r =
+			haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
+		if (r == bytes_buf->w) {
+			break;
+		}
+		haclog_thread_yield();
+	} while (1);
 }
