@@ -26,7 +26,9 @@ static_assert(__cplusplus >= 201103L, "haclog minimum required c11 or c++11");
 static_assert(0, "haclog minimum required c11 or c++11");
 	#endif
 #else
-static_assert(false, "haclog can't find c or c++ version");
+	#if !defined(HACLOG_PLATFORM_WINDOWS)
+static_assert(0, "haclog can't find c or c++ version");
+	#endif
 #endif
 
 #define HACLOG_SERIALIZE(bytes_buf, lvl, fmt, ...)                             \

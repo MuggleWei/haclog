@@ -3,7 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
+#include <time.h>
+#if HACLOG_PLATFORM_WINDOWS
+	#include <windows.h>
+#else
+	#include <unistd.h>
+#endif
 
 struct log_msg {
 	uint64_t u64;
@@ -59,7 +64,11 @@ int main()
 
 	for (int i = 0; i < 16; i++) {
 		run(arr, cnt);
+#if HACLOG_PLATFORM_WINDOWS
+		Sleep(500);
+#else
 		usleep(500000);
+#endif
 	}
 
 	haclog_thread_context_cleanup();
