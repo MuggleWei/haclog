@@ -1,6 +1,7 @@
 #include "haclog_thread_context.h"
 #include "haclog/haclog_context.h"
 #include "haclog/haclog_err.h"
+#include "haclog/haclog_thread.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,7 +21,9 @@ haclog_thread_context_t *haclog_thread_context_init()
 	}
 	memset(s_haclog_thread_ctx, 0, sizeof(*s_haclog_thread_ctx));
 
-	s_haclog_thread_ctx->bytes_buf = haclog_bytes_buffer_new(1024 * 1024 * 8);
+	haclog_context_t *ctx = haclog_context_get();
+	s_haclog_thread_ctx->bytes_buf =
+		haclog_bytes_buffer_new(ctx->bytes_buf_size);
 	if (s_haclog_thread_ctx->bytes_buf == NULL) {
 		haclog_thread_context_cleanup();
 		haclog_set_error(HACLOG_ERR_ALLOC_MEM);
@@ -34,6 +37,8 @@ haclog_thread_context_t *haclog_thread_context_init()
 		return NULL;
 	}
 
+	s_haclog_thread_ctx->tid = haclog_thread_readable_id();
+
 	return s_haclog_thread_ctx;
 }
 
@@ -45,6 +50,8 @@ void haclog_thread_context_cleanup()
 		}
 
 		haclog_context_remove_thread_context(s_haclog_thread_ctx);
+
+		s_haclog_thread_ctx->tid = 0;
 
 		if (s_haclog_thread_ctx->bytes_buf) {
 			haclog_bytes_buffer_free(s_haclog_thread_ctx->bytes_buf);

@@ -57,7 +57,7 @@ void haclog_print_stacktrace()
 #endif // HACLOG_PLATFORM_WINDOWS
 }
 
-void haclog_assert()
+void haclog_debug_break()
 {
 #if !defined(NDEBUG)
 		haclog_print_stacktrace();

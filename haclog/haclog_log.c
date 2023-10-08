@@ -1,27 +1,61 @@
 #include "haclog.h"
+#include "haclog/haclog_context.h"
+#include "haclog/haclog_stacktrace.h"
 #include "haclog/haclog_thread.h"
 #include <stdio.h>
-
-extern haclog_context_t *haclog_context_get();
+#include <stdlib.h>
 
 static haclog_thread_ret_t s_haclog_backend_func(void *args)
 {
 	HACLOG_UNUSED(args);
 
-	char buf[2048];
 	haclog_context_t *ctx = haclog_context_get();
+
+	unsigned long bufsize = ctx->buf_size;
+	if (bufsize < 2048) {
+		bufsize = 2048;
+	}
+
+	char *msg = (char *)malloc(bufsize);
+	if (msg == NULL) {
+		haclog_debug_break();
+		return NULL;
+	}
+
+	char *buf = (char *)malloc(bufsize);
+	if (buf == NULL) {
+		haclog_debug_break();
+		return NULL;
+	}
+
 	while (1) {
 		haclog_spinlock_lock(&ctx->spinlock);
 
 		haclog_thread_context_list_t *node = ctx->th_ctx_head.next;
 		while (node) {
 			haclog_bytes_buffer_t *bytes_buf = node->th_ctx->bytes_buf;
-			int n = haclog_printf_primitive_format(bytes_buf, buf, sizeof(buf));
-			if (n > 0) {
-				// TODO: implement log handler
-				// fprintf(stdout, "%s\n", buf);
-			} else {
+			haclog_meta_info_t meta = {};
+			int n =
+				haclog_printf_primitive_format(bytes_buf, &meta, msg, bufsize);
+			if (n < 0) {
 				node = node->next;
+				continue;
+			}
+
+			meta.tid = node->th_ctx->tid;
+			for (unsigned int i = 0; i < ctx->n_handler; ++i) {
+				haclog_handler_t *handler = ctx->handlers[i];
+
+				if (!haclog_handler_should_write(handler, meta.loc->level)) {
+					continue;
+				}
+
+				if (handler->fmt == NULL) {
+					haclog_debug_break();
+					continue;
+				}
+				n = handler->fmt(&meta, msg, n, buf, bufsize);
+				handler->write(handler, &meta, buf, n);
 			}
 		}
 

@@ -32,7 +32,7 @@ HACLOG_EXPORT
 void haclog_print_stacktrace();
 
 HACLOG_EXPORT
-void haclog_assert();
+void haclog_debug_break();
 
 HACLOG_EXTERN_C_END
 

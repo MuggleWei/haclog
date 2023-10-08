@@ -23,6 +23,7 @@ enum {
 	HACLOG_ERR_PRINTF_TYPE, //!< unrecognized format specifier
 	HACLOG_ERR_SYS_CALL, //!< error system call
 	HACLOG_ERR_ARGUMENTS, //!< invalid arguments
+	HACLOG_ERR_INTERRUPT, //!< signal interrupt
 	MAX_HACLOG_ERR,
 };
 

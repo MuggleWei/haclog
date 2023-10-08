@@ -7,7 +7,10 @@ haclog_context_t *haclog_context_get()
 	static haclog_context_t s_ctx = {
 		.spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK,
 		.th_ctx_head = { .next = NULL, .th_ctx = NULL },
+		.n_handler = 0,
+		.handlers = {},
 		.bytes_buf_size = 1024 * 1024 * 8,
+		.buf_size = 4096,
 	};
 	return &s_ctx;
 }
@@ -51,10 +54,20 @@ void haclog_context_remove_thread_context(haclog_thread_context_t *th_ctx)
 	haclog_spinlock_unlock(&ctx->spinlock);
 }
 
+int haclog_context_add_handler(haclog_handler_t *handler)
+{
+	haclog_context_t *ctx = haclog_context_get();
+	if (ctx->n_handler == sizeof(ctx->handlers) / sizeof(ctx->handlers[0])) {
+		return HACLOG_ERR_ALLOC_MEM;
+	}
+	ctx->handlers[ctx->n_handler++] = handler;
+	return 0;
+}
+
 void haclog_context_set_bytes_buf_size(unsigned long bufsize)
 {
-	if (bufsize < 1024) {
-		bufsize = 1024;
+	if (bufsize < 1024 * 8) {
+		bufsize = 1024 * 8;
 	}
 
 	haclog_context_t *ctx = haclog_context_get();
@@ -65,4 +78,13 @@ unsigned long haclog_context_get_bytes_buf_size()
 {
 	haclog_context_t *ctx = haclog_context_get();
 	return ctx->bytes_buf_size;
+}
+
+void haclog_context_set_buf_size(unsigned long bufsize)
+{
+	if (bufsize < 2048) {
+		bufsize = 2048;
+	}
+	haclog_context_t *ctx = haclog_context_get();
+	ctx->buf_size = bufsize;
 }

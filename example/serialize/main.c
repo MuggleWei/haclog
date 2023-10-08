@@ -24,8 +24,8 @@ int main()
 			d, f, 6, llu, s, s);
 
 		char buf[2048];
-		int n =
-			haclog_printf_primitive_format(th_ctx->bytes_buf, buf, sizeof(buf));
+		int n = haclog_printf_primitive_format(th_ctx->bytes_buf, NULL, buf,
+											   sizeof(buf));
 		printf("total bytes: %d\n", n);
 		printf("%s|end\n", buf);
 	}

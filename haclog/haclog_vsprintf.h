@@ -13,6 +13,7 @@
 
 #include "haclog/haclog_macro.h"
 #include "haclog/haclog_bytes_buffer.h"
+#include <time.h>
 
 HACLOG_EXTERN_C_BEGIN
 
@@ -87,11 +88,21 @@ typedef unsigned long long haclog_serialize_placeholder;
  * @brief haclog serialize head
  */
 typedef struct haclog_serialize_hdr {
+	struct timespec ts; //!< timestamp
 	haclog_atomic_int pos_const; //!< const arguments position
 	haclog_atomic_int pos_str; //!< string arguments position
 	unsigned long extra_len; //!< extra length
 	haclog_printf_primitive_t *primitive; //!< primitive pointer
 } haclog_serialize_hdr_t;
+
+/**
+ * @brief log message
+ */
+typedef struct haclog_meta_info {
+	haclog_printf_loc_t *loc;
+	haclog_thread_id tid;
+	struct timespec ts;
+} haclog_meta_info_t;
 
 /**
  * @brief generate printf primitive
@@ -167,16 +178,18 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
  * @brief format primitive to string (include '\0')
  *
  * @param bytes_buf  bytes buffer pointer
+ * @param meta       log meta info pointer
  * @param buf        buffer store the result
  * @param bufsize    size of buffer
  *
  * @return 
- *   - on success, return the number of characters printed (excluding '\0')
- *   - on nothing format, return 0
+ *   - on success, return the number of characters printed (exclude '\0')
+ *   - on nothing format, return -2
  *   - on failed, return -1 and set haclog last error
  */
 HACLOG_EXPORT
-int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf, char *buf,
+int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
+								   haclog_meta_info_t *meta, char *buf,
 								   size_t bufsize);
 
 HACLOG_EXTERN_C_END

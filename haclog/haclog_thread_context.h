@@ -13,11 +13,13 @@
 
 #include "haclog/haclog_macro.h"
 #include "haclog/haclog_bytes_buffer.h"
+#include "haclog/haclog_thread.h"
 
 HACLOG_EXTERN_C_BEGIN
 
 typedef struct haclog_thread_context {
 	haclog_bytes_buffer_t *bytes_buf;
+	haclog_thread_id tid;
 } haclog_thread_context_t;
 
 /**
