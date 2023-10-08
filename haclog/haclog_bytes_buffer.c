@@ -1,8 +1,9 @@
 #include "haclog_bytes_buffer.h"
-#include "haclog/haclog_stacktrace.h"
-#include "haclog/haclog_thread.h"
 #include <stdlib.h>
 #include <string.h>
+#include "haclog/haclog_sleep.h"
+#include "haclog/haclog_stacktrace.h"
+#include "haclog/haclog_thread.h"
 #include "haclog/haclog_err.h"
 
 #define HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL ((int)sizeof(void *))
@@ -141,6 +142,6 @@ void haclog_bytes_buffer_join(haclog_bytes_buffer_t *bytes_buf)
 		if (r == bytes_buf->w) {
 			break;
 		}
-		haclog_thread_yield();
+		haclog_nsleep(1000 * 1000);
 	} while (1);
 }
