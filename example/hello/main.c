@@ -1,5 +1,6 @@
 #include "haclog/handler/haclog_console_handler.h"
 #include "haclog/handler/haclog_file_handler.h"
+#include "haclog/handler/haclog_file_rotate_handler.h"
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 #include <stdio.h>
@@ -53,6 +54,15 @@ int main()
 	// haclog_handler_set_level((haclog_handler_t *)&file_handler,
 	//                          LOG_LEVEL_DEBUG);
 	// haclog_context_add_handler((haclog_handler_t *)&file_handler);
+
+	static haclog_file_rotate_handler_t file_rot_handler = {};
+	if (haclog_file_rotate_handler_init(&file_rot_handler, "log/hello_rot.log",
+										8 * 1024 * 1024, 5) != 0) {
+		exit(EXIT_FAILURE);
+	}
+	haclog_handler_set_level((haclog_handler_t *)&file_rot_handler,
+							 LOG_LEVEL_DEBUG);
+	haclog_context_add_handler((haclog_handler_t *)&file_rot_handler);
 
 	haclog_backend_run();
 
