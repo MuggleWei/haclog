@@ -57,6 +57,8 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 				n = handler->fmt(&meta, msg, n, buf, bufsize);
 				handler->write(handler, &meta, buf, n);
 			}
+
+			node = node->next;
 		}
 
 		haclog_spinlock_unlock(&ctx->spinlock);

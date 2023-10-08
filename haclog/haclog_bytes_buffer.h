@@ -74,7 +74,21 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
  */
 HACLOG_EXPORT
 int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
-								haclog_atomic_int pos);
+							   haclog_atomic_int pos);
+
+/**
+ * @brief move reader to specify position
+ *
+ * @param bytes_buf  bytes buffer pointer
+ * @param pos        expect position
+ *
+ * @return 
+ *   - on success, return 0
+ *   - on failed, return -1 and set haclog last error
+ */
+HACLOG_EXPORT
+int haclog_bytes_buffer_r_move(haclog_bytes_buffer_t *bytes_buf,
+							   haclog_atomic_int pos);
 
 /**
  * @brief get address pointer

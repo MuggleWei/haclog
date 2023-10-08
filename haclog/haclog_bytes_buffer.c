@@ -1,4 +1,5 @@
 #include "haclog_bytes_buffer.h"
+#include "haclog/haclog_stacktrace.h"
 #include "haclog/haclog_thread.h"
 #include <stdlib.h>
 #include <string.h>
@@ -90,21 +91,7 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 		// contiguous writable
 		haclog_atomic_int cw = r - w - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL;
 		if (cw < num_bytes) {
-			haclog_atomic_int w_to_end = bytes_buf->capacity - w;
-			if (w_to_end < num_bytes) {
-				if (r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL < num_bytes) {
-					return -2;
-				} else {
-					/*
-					 w         r
-					 |---------|-----------|
-					 */
-					return 0;
-				}
-
-			} else {
-				return -2;
-			}
+			return -2;
 		} else {
 			return w;
 		}
@@ -120,7 +107,18 @@ int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
 	}
 
 	haclog_atomic_store(&bytes_buf->w, pos, haclog_memory_order_release);
+	return 0;
+}
 
+int haclog_bytes_buffer_r_move(haclog_bytes_buffer_t *bytes_buf,
+							   haclog_atomic_int pos)
+{
+	if (pos < 0 || pos >= bytes_buf->capacity) {
+		haclog_set_error(HACLOG_ERR_ARGUMENTS);
+		return -1;
+	}
+
+	haclog_atomic_store(&bytes_buf->r, pos, haclog_memory_order_relaxed);
 	return 0;
 }
 

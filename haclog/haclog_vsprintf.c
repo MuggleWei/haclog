@@ -953,7 +953,6 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 		}
 
 		haclog_thread_yield();
-		// haclog_nsleep(1);
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	} while (1);
 	w = w_hdr + hdr_size;
@@ -971,7 +970,6 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 		}
 
 		haclog_thread_yield();
-		// haclog_nsleep(1);
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	} while (1);
 	w = w_const_args + primitive->param_size;
@@ -1084,13 +1082,13 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 			HACLOG_SERIALIZE_VA_ARG(p, long int);
 		} break;
 		case HACLOG_FT_ULONG: {
-			HACLOG_SERIALIZE_VA_ARG(p, unsigned long int);
+			HACLOG_SERIALIZE_VA_ARG(p, unsigned long);
 		} break;
 		case HACLOG_FT_LONGLONG: {
-			HACLOG_SERIALIZE_VA_ARG(p, long long int);
+			HACLOG_SERIALIZE_VA_ARG(p, long long);
 		} break;
 		case HACLOG_FT_ULONGLONG: {
-			HACLOG_SERIALIZE_VA_ARG(p, unsigned long long int);
+			HACLOG_SERIALIZE_VA_ARG(p, unsigned long long);
 		} break;
 		default: {
 			haclog_debug_break();
@@ -1112,7 +1110,6 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 		}
 
 		haclog_thread_yield();
-		// haclog_nsleep(1);
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	} while (1);
 	p = haclog_bytes_buffer_get(bytes_buf, w_str);
@@ -1139,13 +1136,13 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	hdr->primitive = primitive;
 
 	// move writer
+	haclog_atomic_int next_w = 0;
 	if (extra_len > 0) {
-		haclog_atomic_store(&bytes_buf->w, w_str + extra_len,
-							haclog_memory_order_release);
+		next_w = w_str + extra_len;
 	} else {
-		haclog_atomic_store(&bytes_buf->w, w_const_args + primitive->param_size,
-							haclog_memory_order_release);
+		next_w = w_const_args + primitive->param_size;
 	}
+	haclog_bytes_buffer_w_move(bytes_buf, next_w);
 }
 
 #define HACLOG_MAX_FMT_ITEM 128
@@ -1225,9 +1222,9 @@ HACLOG_FORMAT_VAL_FUNC(ushort, unsigned short, v)
 HACLOG_FORMAT_VAL_FUNC(int, int, v)
 HACLOG_FORMAT_VAL_FUNC(uint, unsigned int, v)
 HACLOG_FORMAT_VAL_FUNC(long_int, long int, v)
-HACLOG_FORMAT_VAL_FUNC(u_long_int, unsigned long int, v)
-HACLOG_FORMAT_VAL_FUNC(long_long_int, long long int, v)
-HACLOG_FORMAT_VAL_FUNC(u_long_long_int, unsigned long long int, v)
+HACLOG_FORMAT_VAL_FUNC(u_long_int, unsigned long, v)
+HACLOG_FORMAT_VAL_FUNC(long_long_int, long long, v)
+HACLOG_FORMAT_VAL_FUNC(u_long_long_int, unsigned long long, v)
 
 #define HACLOG_DESERIALIZE(p, v)                                     \
 	static_assert(sizeof(v) <= sizeof(haclog_serialize_placeholder), \
@@ -1401,14 +1398,13 @@ int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
 		memcpy(&meta->ts, &hdr->ts, sizeof(meta->ts));
 	}
 
+	haclog_atomic_int next_r = 0;
 	if (hdr->extra_len > 0) {
-		haclog_atomic_store(&bytes_buf->r, hdr->pos_str + hdr->extra_len,
-							haclog_memory_order_relaxed);
+		next_r = hdr->pos_str + hdr->extra_len;
 	} else {
-		haclog_atomic_store(&bytes_buf->r,
-							hdr->pos_const + primitive->param_size,
-							haclog_memory_order_relaxed);
+		next_r = hdr->pos_const + primitive->param_size;
 	}
+	haclog_bytes_buffer_r_move(bytes_buf, next_r);
 
 	return total_bytes;
 }

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 
 struct log_msg {
@@ -72,7 +73,7 @@ int main()
 
 	srand(time(NULL));
 
-	int cnt = 100000;
+	int cnt = 10000;
 	struct log_msg *arr =
 		(struct log_msg *)malloc(sizeof(struct log_msg) * cnt);
 	for (int i = 0; i < cnt; i++) {
@@ -84,6 +85,7 @@ int main()
 			arr[i].s[j] = (rand() % 26) + 'a';
 		}
 		arr[i].s[sizeof(arr[0].s) - 1] = '\0';
+		memcpy(arr[i].s, "HACLOG123456", 12);
 	}
 
 	for (int i = 0; i < 16; i++) {

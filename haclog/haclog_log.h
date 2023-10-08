@@ -40,7 +40,7 @@ static_assert(0, "haclog can't find c or c++ version");
 			static haclog_spinlock_t spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK; \
 			haclog_spinlock_lock(&spinlock);                                   \
 			if (primitive == NULL) {                                           \
-				haclog_printf_loc_t loc = {                                    \
+				const haclog_printf_loc_t loc = {                              \
 					.file = __FILE__,                                          \
 					.func = __FUNCTION__,                                      \
 					.line = __LINE__,                                          \
