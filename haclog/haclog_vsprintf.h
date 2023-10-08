@@ -162,6 +162,13 @@ int haclog_printf_spec_param_size(haclog_printf_spec_t *spec);
 HACLOG_EXPORT
 void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive);
 
+// format attribute
+#if __GNUC__
+	#define HACLOG_PRINT_FORMAT_CHECK __attribute__((format(printf, 3, 4)));
+#else
+	#define HACLOG_PRINT_FORMAT_CHECK
+#endif
+
 /**
  * @brief serialize primitive and arguments into bytes buffer
  *
@@ -172,7 +179,8 @@ void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive);
 HACLOG_EXPORT
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
-									   ...);
+									   const char *fmt_str,
+									   ...) HACLOG_PRINT_FORMAT_CHECK;
 
 /**
  * @brief format primitive to string (include '\0')

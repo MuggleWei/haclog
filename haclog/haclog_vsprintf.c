@@ -929,8 +929,10 @@ typedef struct haclog_str_cache {
 
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
-									   ...)
+									   const char *fmt_str, ...)
 {
+	HACLOG_UNUSED(fmt_str);
+
 	const haclog_atomic_int hdr_size =
 		(haclog_atomic_int)sizeof(haclog_serialize_hdr_t);
 	haclog_atomic_int r =
@@ -952,8 +954,8 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 			return;
 		}
 
-		// haclog_thread_yield();
-		haclog_nsleep(1);
+		haclog_thread_yield();
+		// haclog_nsleep(1);
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	} while (1);
 	w = w_hdr + hdr_size;
@@ -970,8 +972,8 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 			return;
 		}
 
-		// haclog_thread_yield();
-		haclog_nsleep(1);
+		haclog_thread_yield();
+		// haclog_nsleep(1);
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	} while (1);
 	w = w_const_args + primitive->param_size;
@@ -1111,8 +1113,8 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 			return;
 		}
 
-		// haclog_thread_yield();
-		haclog_nsleep(1);
+		haclog_thread_yield();
+		// haclog_nsleep(1);
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	} while (1);
 	p = haclog_bytes_buffer_get(bytes_buf, w_str);

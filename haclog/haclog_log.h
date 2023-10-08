@@ -50,7 +50,7 @@ static_assert(0, "haclog can't find c or c++ version");
 			}                                                                  \
 			haclog_spinlock_unlock(&spinlock);                                 \
 		}                                                                      \
-		haclog_printf_primitive_serialize(bytes_buf, primitive,                \
+		haclog_printf_primitive_serialize(bytes_buf, primitive, fmt,           \
 										  ##__VA_ARGS__);                      \
 	} while (0)
 

@@ -47,22 +47,22 @@ int main()
 	//                          LOG_LEVEL_WARNING);
 	// haclog_context_add_handler((haclog_handler_t *)&console_handler);
 
-	// static haclog_file_handler_t file_handler = {};
-	// if (haclog_file_handler_init(&file_handler, "log/hello.log", "w") != 0) {
-	//     exit(EXIT_FAILURE);
-	// }
-	// haclog_handler_set_level((haclog_handler_t *)&file_handler,
-	//                          LOG_LEVEL_DEBUG);
-	// haclog_context_add_handler((haclog_handler_t *)&file_handler);
-
-	static haclog_file_rotate_handler_t file_rot_handler = {};
-	if (haclog_file_rotate_handler_init(&file_rot_handler, "log/hello_rot.log",
-										8 * 1024 * 1024, 5) != 0) {
+	static haclog_file_handler_t file_handler = {};
+	if (haclog_file_handler_init(&file_handler, "log/hello.log", "w") != 0) {
 		exit(EXIT_FAILURE);
 	}
-	haclog_handler_set_level((haclog_handler_t *)&file_rot_handler,
+	haclog_handler_set_level((haclog_handler_t *)&file_handler,
 							 LOG_LEVEL_DEBUG);
-	haclog_context_add_handler((haclog_handler_t *)&file_rot_handler);
+	haclog_context_add_handler((haclog_handler_t *)&file_handler);
+
+	// static haclog_file_rotate_handler_t file_rot_handler = {};
+	// if (haclog_file_rotate_handler_init(&file_rot_handler, "log/hello_rot.log",
+	//                                     8 * 1024 * 1024, 5) != 0) {
+	//     exit(EXIT_FAILURE);
+	// }
+	// haclog_handler_set_level((haclog_handler_t *)&file_rot_handler,
+	//                          LOG_LEVEL_DEBUG);
+	// haclog_context_add_handler((haclog_handler_t *)&file_rot_handler);
 
 	haclog_backend_run();
 
@@ -72,7 +72,7 @@ int main()
 
 	srand(time(NULL));
 
-	int cnt = 10000;
+	int cnt = 100000;
 	struct log_msg *arr =
 		(struct log_msg *)malloc(sizeof(struct log_msg) * cnt);
 	for (int i = 0; i < cnt; i++) {
