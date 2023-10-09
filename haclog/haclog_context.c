@@ -9,7 +9,7 @@ haclog_context_t *haclog_context_get()
 		.th_ctx_head = { .next = NULL, .th_ctx = NULL },
 		.n_handler = 0,
 		.level = HACLOG_LEVEL_FATAL,
-		.handlers = {},
+		.handlers = { NULL },
 		.bytes_buf_size = 1024 * 1024 * 8,
 		.buf_size = 4096,
 	};

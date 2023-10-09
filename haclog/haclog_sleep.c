@@ -13,7 +13,25 @@
 int haclog_nsleep(unsigned long ns)
 {
 #if HACLOG_PLATFORM_WINDOWS
-	static_assert(0, "to be continued...");
+	HANDLE timer;
+	LARGE_INTEGER ft;
+
+	LONGLONG hundred_ns = (LONGLONG)(ns / 100);
+	if (hundred_ns == 0) {
+		hundred_ns = 1;
+	}
+
+	// NOTE: 
+	//   * negative value represent relative
+	//   * time interval unit is 100 ns
+	ft.QuadPart = -hundred_ns;
+
+	timer = CreateWaitableTimer(NULL, TRUE, NULL);
+	SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+	WaitForSingleObject(timer, INFINITE);
+	CloseHandle(timer);
+
+	return 0;
 #else
 	#if _POSIX_C_SOURCE >= 199309L
 	struct timespec ts = { .tv_sec = 0, .tv_nsec = ns };

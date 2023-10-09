@@ -322,7 +322,12 @@ function(add_example name folder)
 		${haclog_src_dir}
 		${haclog_gen_dir})
 	target_link_libraries(${name} ${haclog})
-	target_compile_options(${name} PUBLIC -save-temps=obj)
+
+	# save temp object file, such as: asm code
+	if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
+		(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+		target_compile_options(${name} PUBLIC -save-temps=obj)
+	endif()
 endfunction()
 
 if (HACLOG_BUILD_EXAMPLE)

@@ -4,7 +4,8 @@
 
 void add_console_handler()
 {
-	static haclog_console_handler_t handler = {};
+	static haclog_console_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_console_handler_init(&handler, 1) != 0) {
 		fprintf(stderr, "failed init console handler");
 		exit(EXIT_FAILURE);
@@ -16,7 +17,8 @@ void add_console_handler()
 
 void add_file_handler()
 {
-	static haclog_file_handler_t handler = {};
+	static haclog_file_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_handler_init(&handler, "logs/hello.log", "w") != 0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);
@@ -27,7 +29,8 @@ void add_file_handler()
 
 void add_file_rotate_handler()
 {
-	static haclog_file_rotate_handler_t handler = {};
+	static haclog_file_rotate_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_rotate_handler_init(&handler, "logs/hello.rot.log", 16,
 										5) != 0) {
 		fprintf(stderr, "failed init file handler");
@@ -39,7 +42,8 @@ void add_file_rotate_handler()
 
 void add_file_time_rot_handler()
 {
-	static haclog_file_time_rot_handler_t handler = {};
+	static haclog_file_time_rot_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_time_rotate_handler_init(
 			&handler, "logs/hello.time_rot.log", HACLOG_TIME_ROTATE_UNIT_SEC, 2,
 			0) != 0) {

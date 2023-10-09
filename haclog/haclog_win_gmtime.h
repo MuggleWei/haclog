@@ -12,6 +12,7 @@
 #define HACLOG_WIN_GMTIME_H_
 
 #include "haclog/haclog_macro.h"
+#include <time.h>
 
 HACLOG_EXTERN_C_BEGIN
 

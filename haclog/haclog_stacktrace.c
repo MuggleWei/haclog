@@ -8,6 +8,7 @@
 	#if !defined(NDEBUG)
 		#include <windows.h>
 		#include <dbghelp.h>
+		#pragma comment(lib, "Dbghelp")
 	#endif
 #else
 	#if HACLOG_HAVE_BACKTRACE

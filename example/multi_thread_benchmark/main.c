@@ -64,7 +64,8 @@ haclog_thread_ret_t run(void *args)
 
 void add_file_handler()
 {
-	static haclog_file_handler_t handler = {};
+	static haclog_file_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_handler_init(&handler, "logs/multi_thread_benchmark.log",
 								 "w") != 0) {
 		fprintf(stderr, "failed init file handler");
@@ -76,7 +77,8 @@ void add_file_handler()
 
 void add_file_rotate_handler()
 {
-	static haclog_file_rotate_handler_t handler = {};
+	static haclog_file_rotate_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_rotate_handler_init(&handler,
 										"logs/multi_thread_benchmark.rot.log",
 										MSG_CNT * NUM_THREAD, 5) != 0) {
@@ -89,7 +91,8 @@ void add_file_rotate_handler()
 
 void add_file_time_rot_handler()
 {
-	static haclog_file_time_rot_handler_t handler = {};
+	static haclog_file_time_rot_handler_t handler;
+	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_time_rotate_handler_init(
 			&handler, "logs/multi_thread_benchmark.time_rot.log",
 			HACLOG_TIME_ROTATE_UNIT_DAY, 3, 0) != 0) {

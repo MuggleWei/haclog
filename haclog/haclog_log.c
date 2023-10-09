@@ -10,7 +10,8 @@ static void haclog_consume(haclog_context_t *ctx,
 						   unsigned long bufsize)
 {
 	haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;
-	haclog_meta_info_t meta = {};
+	haclog_meta_info_t meta;
+	memset(&meta, 0, sizeof(meta));
 	haclog_atomic_int w =
 		haclog_atomic_load(&bytes_buf->w, haclog_memory_order_acquire);
 	int n = 0;

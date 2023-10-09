@@ -126,11 +126,12 @@ int main()
 {
 	UNITY_BEGIN();
 
+	haclog_context_t *ctx = haclog_context_get();
+	ctx->level = 0;
+
 	RUN_TEST(test_serialize_fmt_empty);
 	RUN_TEST(test_serialize_fmt_int);
 	RUN_TEST(test_serialize_fmt_uint);
-
-	// TODO:
 
 	return UNITY_END();
 }

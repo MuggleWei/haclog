@@ -60,7 +60,7 @@ static int haclog_console_handler_before_write(haclog_handler_t *base_handler,
 		(haclog_console_handler_t *)base_handler;
 
 	if (handler->enable_color && meta->loc->level >= HACLOG_LEVEL_WARNING) {
-#if MUGGLE_PLATFORM_WINDOWS
+#if HACLOG_PLATFORM_WINDOWS
 		const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 		// get the current text color
@@ -68,10 +68,10 @@ static int haclog_console_handler_before_write(haclog_handler_t *base_handler,
 		GetConsoleScreenBufferInfo(stdout_handle, &sb_info);
 		handler->sb_attrs = sb_info.wAttributes;
 
-		if (msg->level >= MUGGLE_LEVEL_ERROR) {
+		if (meta->loc->level >= HACLOG_LEVEL_ERROR) {
 			SetConsoleTextAttribute(stdout_handle,
 									FOREGROUND_RED | FOREGROUND_INTENSITY);
-		} else if (msg->level >= MUGGLE_LEVEL_WARNING) {
+		} else if (meta->loc->level >= HACLOG_LEVEL_WARNING) {
 			SetConsoleTextAttribute(stdout_handle, FOREGROUND_RED |
 													   FOREGROUND_GREEN |
 													   FOREGROUND_INTENSITY);
@@ -103,7 +103,7 @@ static int haclog_console_handler_after_write(haclog_handler_t *base_handler,
 	fwrite("\n", 1, 1, fp);
 
 	if (handler->enable_color && meta->loc->level >= HACLOG_LEVEL_WARNING) {
-#if MUGGLE_PLATFORM_WINDOWS
+#if HACLOG_PLATFORM_WINDOWS
 		const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 		SetConsoleTextAttribute(stdout_handle, handler->sb_attrs);
 #else
