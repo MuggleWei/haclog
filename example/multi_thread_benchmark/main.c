@@ -1,9 +1,8 @@
-#include "haclog/handler/haclog_file_time_rot_handler.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
-#include <stdint.h>
 
 #define MSG_CNT 2000
 #define NUM_THREAD 8
