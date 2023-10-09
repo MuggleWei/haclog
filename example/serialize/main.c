@@ -15,6 +15,7 @@ int main()
 	}
 
 	haclog_thread_context_t *th_ctx = haclog_thread_context_get();
+	haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;
 
 	int level = 0;
 	for (int i = 0; i < 1; i++) {
@@ -24,7 +25,9 @@ int main()
 			d, f, 6, llu, s, s);
 
 		char buf[2048];
-		int n = haclog_printf_primitive_format(th_ctx->bytes_buf, NULL, buf,
+		haclog_atomic_int w =
+			haclog_atomic_load(&bytes_buf->w, haclog_memory_order_acquire);
+		int n = haclog_printf_primitive_format(bytes_buf, NULL, w, buf,
 											   sizeof(buf));
 		printf("total bytes: %d\n", n);
 		printf("%s|end\n", buf);

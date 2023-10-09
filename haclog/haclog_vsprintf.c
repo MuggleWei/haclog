@@ -1237,7 +1237,8 @@ HACLOG_FORMAT_VAL_FUNC(u_long_long_int, unsigned long long, v)
 	HACLOG_DESERIALIZE(p, v);
 
 int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
-								   haclog_meta_info_t *meta, char *buf,
+								   haclog_meta_info_t *meta,
+								   haclog_atomic_int w, char *buf,
 								   size_t bufsize)
 {
 	if (bufsize < 1) {
@@ -1245,8 +1246,6 @@ int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
 		return -1;
 	}
 
-	haclog_atomic_int w =
-		haclog_atomic_load(&bytes_buf->w, haclog_memory_order_acquire);
 	if (bytes_buf->r == w) {
 		return -2;
 	}

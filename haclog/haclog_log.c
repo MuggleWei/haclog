@@ -5,6 +5,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static void haclog_consume(haclog_context_t *ctx,
+						   haclog_thread_context_t *th_ctx, char *msg,
+						   char *buf, unsigned long bufsize)
+{
+	haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;
+	haclog_meta_info_t meta = {};
+	haclog_atomic_int w =
+		haclog_atomic_load(&bytes_buf->w, haclog_memory_order_acquire);
+	int n = 0;
+
+	while (1) {
+		n = haclog_printf_primitive_format(bytes_buf, &meta, w, msg, bufsize);
+		if (n < 0) {
+			break;
+		}
+
+		meta.tid = th_ctx->tid;
+		for (unsigned int i = 0; i < ctx->n_handler; ++i) {
+			haclog_handler_t *handler = ctx->handlers[i];
+
+			if (!haclog_handler_should_write(handler, meta.loc->level)) {
+				continue;
+			}
+
+			if (handler->fmt == NULL) {
+				haclog_debug_break();
+				continue;
+			}
+			n = handler->fmt(&meta, msg, n, buf, bufsize);
+			handler->write(handler, &meta, buf, n);
+		}
+	}
+}
+
 static haclog_thread_ret_t s_haclog_backend_func(void *args)
 {
 	HACLOG_UNUSED(args);
@@ -33,31 +67,7 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 
 		haclog_thread_context_list_t *node = ctx->th_ctx_head.next;
 		while (node) {
-			haclog_bytes_buffer_t *bytes_buf = node->th_ctx->bytes_buf;
-			haclog_meta_info_t meta = {};
-			int n =
-				haclog_printf_primitive_format(bytes_buf, &meta, msg, bufsize);
-			if (n < 0) {
-				node = node->next;
-				continue;
-			}
-
-			meta.tid = node->th_ctx->tid;
-			for (unsigned int i = 0; i < ctx->n_handler; ++i) {
-				haclog_handler_t *handler = ctx->handlers[i];
-
-				if (!haclog_handler_should_write(handler, meta.loc->level)) {
-					continue;
-				}
-
-				if (handler->fmt == NULL) {
-					haclog_debug_break();
-					continue;
-				}
-				n = handler->fmt(&meta, msg, n, buf, bufsize);
-				handler->write(handler, &meta, buf, n);
-			}
-
+			haclog_consume(ctx, node->th_ctx, msg, buf, bufsize);
 			node = node->next;
 		}
 

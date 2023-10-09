@@ -187,6 +187,7 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
  *
  * @param bytes_buf  bytes buffer pointer
  * @param meta       log meta info pointer
+ * @param w          writer position
  * @param buf        buffer store the result
  * @param bufsize    size of buffer
  *
@@ -197,7 +198,8 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
  */
 HACLOG_EXPORT
 int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
-								   haclog_meta_info_t *meta, char *buf,
+								   haclog_meta_info_t *meta,
+								   haclog_atomic_int w, char *buf,
 								   size_t bufsize);
 
 HACLOG_EXTERN_C_END
