@@ -22,10 +22,6 @@ static void haclog_consume(haclog_context_t *ctx,
 		}
 		meta.tid = th_ctx->tid;
 
-		if (meta.loc->level < ctx->level) {
-			continue;
-		}
-
 		for (unsigned int i = 0; i < ctx->n_handler; ++i) {
 			haclog_handler_t *handler = ctx->handlers[i];
 

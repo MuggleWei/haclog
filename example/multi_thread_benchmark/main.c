@@ -4,10 +4,10 @@
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 
-#define MSG_CNT 2000
+#define MSG_CNT 10000
 #define NUM_THREAD 8
-#define ROUND 12
-#define ROUND_INTERVAL 1000
+#define ROUND 16
+#define ROUND_INTERVAL (100 * 1000 * 1000)
 
 typedef struct log_msg {
 	uint64_t u64;
