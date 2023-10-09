@@ -8,6 +8,7 @@ haclog_context_t *haclog_context_get()
 		.spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK,
 		.th_ctx_head = { .next = NULL, .th_ctx = NULL },
 		.n_handler = 0,
+		.level = HACLOG_LEVEL_FATAL,
 		.handlers = {},
 		.bytes_buf_size = 1024 * 1024 * 8,
 		.buf_size = 4096,
@@ -61,6 +62,11 @@ int haclog_context_add_handler(haclog_handler_t *handler)
 		return HACLOG_ERR_ALLOC_MEM;
 	}
 	ctx->handlers[ctx->n_handler++] = handler;
+
+	if (handler->level < ctx->level) {
+		ctx->level = handler->level;
+	}
+
 	return 0;
 }
 

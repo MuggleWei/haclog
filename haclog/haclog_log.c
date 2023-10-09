@@ -16,14 +16,16 @@ static void haclog_consume(haclog_context_t *ctx,
 	int n = 0;
 
 	while (1) {
-		// TODO: 这里在外部过滤一下 level
-
 		n = haclog_printf_primitive_format(bytes_buf, &meta, w, msg, bufsize);
 		if (n < 0) {
 			break;
 		}
-
 		meta.tid = th_ctx->tid;
+
+		if (meta.loc->level < ctx->level) {
+			continue;
+		}
+
 		for (unsigned int i = 0; i < ctx->n_handler; ++i) {
 			haclog_handler_t *handler = ctx->handlers[i];
 
