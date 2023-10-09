@@ -19,6 +19,7 @@
 #include "haclog/haclog_sleep.h"
 #include "haclog/haclog_path.h"
 #include "haclog/haclog_os.h"
+#include "haclog/haclog_win_gmtime.h"
 #include "haclog/haclog_spinlock.h"
 #include "haclog/haclog_bytes_buffer.h"
 #include "haclog/haclog_vsprintf.h"
@@ -28,6 +29,7 @@
 #include "haclog/handler/haclog_console_handler.h"
 #include "haclog/handler/haclog_file_handler.h"
 #include "haclog/handler/haclog_file_rotate_handler.h"
+#include "haclog/handler/haclog_file_time_rot_handler.h"
 #include "haclog/haclog_log.h"
 
 #endif // !HACLOG_HACLOG_H_

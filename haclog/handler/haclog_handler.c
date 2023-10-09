@@ -1,6 +1,7 @@
 #include "haclog_handler.h"
 #include "haclog/haclog_err.h"
 #include "haclog/haclog_path.h"
+#include "haclog/haclog_win_gmtime.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -34,20 +35,6 @@ int haclog_handler_should_write(haclog_handler_t *handler, int level)
 	}
 	return 1;
 }
-
-#if MUGGLE_PLATFORM_WINDOWS
-
-static struct tm *gmtime_r(const time_t *timep, struct tm *result)
-{
-	errno_t err = gmtime_s(result, timep);
-	if (err == 0) {
-		return result;
-	}
-
-	return NULL;
-}
-
-#endif
 
 int haclog_handler_simple_fmt(haclog_meta_info_t *meta, const char *msg,
 							  int msglen, char *buf, size_t bufsize)

@@ -1,3 +1,4 @@
+#include "haclog/handler/haclog_file_time_rot_handler.h"
 #include <stdlib.h>
 #include <string.h>
 #define HACLOG_HOLD_LOG_MACRO 1
@@ -61,18 +62,52 @@ haclog_thread_ret_t run(void *args)
 	return 0;
 }
 
-int main()
+void add_file_handler()
 {
-	// prepare handler
-	static haclog_file_handler_t file_handler = {};
-	if (haclog_file_handler_init(&file_handler,
+	static haclog_file_handler_t handler = {};
+	if (haclog_file_handler_init(&handler,
 								 "logs/multi_thread_benchmark.log", "w") != 0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);
 	}
-	haclog_handler_set_level((haclog_handler_t *)&file_handler,
+	haclog_handler_set_level((haclog_handler_t *)&handler,
 							 HACLOG_LEVEL_DEBUG);
-	haclog_context_add_handler((haclog_handler_t *)&file_handler);
+	haclog_context_add_handler((haclog_handler_t *)&handler);
+}
+
+void add_file_rotate_handler()
+{
+	static haclog_file_rotate_handler_t handler = {};
+	if (haclog_file_rotate_handler_init(&handler,
+										"logs/multi_thread_benchmark.rot.log",
+										MSG_CNT * NUM_THREAD, 5) != 0) {
+		fprintf(stderr, "failed init file rotate handler");
+		exit(EXIT_FAILURE);
+	}
+	haclog_handler_set_level((haclog_handler_t *)&handler,
+							 HACLOG_LEVEL_DEBUG);
+	haclog_context_add_handler((haclog_handler_t *)&handler);
+}
+
+void add_file_time_rot_handler()
+{
+	static haclog_file_time_rot_handler_t handler = {};
+	if (haclog_file_time_rotate_handler_init(
+			&handler, "logs/multi_thread_benchmark.time_rot.log",
+			HACLOG_TIME_ROTATE_UNIT_DAY, 3, 0) != 0) {
+		fprintf(stderr, "failed init file time rotate handler");
+		exit(EXIT_FAILURE);
+	}
+	haclog_handler_set_level((haclog_handler_t *)&handler, HACLOG_LEVEL_DEBUG);
+	haclog_context_add_handler((haclog_handler_t *)&handler);
+}
+
+int main()
+{
+	// prepare handler
+	add_file_handler();
+	// add_file_rotate_handler();
+	// add_file_time_rot_handler();
 	haclog_backend_run();
 
 	// prepare datas
