@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <memset.h>
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 

@@ -4,6 +4,7 @@
 #include "haclog/haclog_thread.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static void haclog_consume(haclog_context_t *ctx,
 						   haclog_thread_context_t *th_ctx, char *msg,
