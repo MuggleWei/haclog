@@ -99,6 +99,8 @@ static int haclog_file_rotate_handler_writev(haclog_handler_t *base_handler,
 		va_start(args, fmt_str);
 		ret = vfprintf(handler->fp, fmt_str, args);
 		va_end(args);
+
+		handler->offset += (long)ret;
 	}
 
 	return ret;
