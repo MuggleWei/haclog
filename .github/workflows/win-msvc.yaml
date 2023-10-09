@@ -1,0 +1,26 @@
+name: Windows MSVC
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Windows MSVC
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@latest
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: build
+        run: >
+          mkdir build;
+          cd build;
+          cmake ..
+          -DCMAKE_C_COMPILER="cl"
+          -DCMAKE_CXX_COMPILER="cl"
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_TESTING=ON;
+          cmake --build . --config Debug;
+      - name: tests
+        run: >
+          cd build;
+          cmake --build . --target RUN_TESTS;

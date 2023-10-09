@@ -1,0 +1,25 @@
+name: Linux GCC
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Linux GCC
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@latest
+      - name: build
+        run: |
+          mkdir build;
+          cd build;
+          cmake ..  \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON;
+          cmake --build . --config Release;
+      - name: tests
+        run: >
+          cd build;
+          make test;
