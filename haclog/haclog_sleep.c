@@ -33,7 +33,7 @@ int haclog_nsleep(unsigned long ns)
 
 	return 0;
 #else
-	#if _POSIX_C_SOURCE >= 199309L
+	#if _POSIX_C_SOURCE >= 199309L || HACLOG_PLATFORM_APPLE
 	struct timespec ts = { .tv_sec = 0, .tv_nsec = ns };
 
 	int res = 0;

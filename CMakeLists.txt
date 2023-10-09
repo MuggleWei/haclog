@@ -26,12 +26,6 @@ foreach(feature ${CMAKE_C_COMPILE_FEATURES})
 	message("support feature: ${feature}")
 endforeach()
 
-# FIX: github action, MacOS use C99 by default, force c11
-if (APPLE)
-	set(CMAKE_C_STANDARD 11)
-	set(CMAKE_C_STANDARD_REQUIRED ON)
-endif()
-
 # set output directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
