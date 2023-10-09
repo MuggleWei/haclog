@@ -38,6 +38,39 @@ haclog_file_rotate_handler_rotate(haclog_file_rotate_handler_t *handler)
 	return 0;
 }
 
+static int
+haclog_file_rotate_handler_before_write(haclog_handler_t *base_handler,
+										haclog_meta_info_t *meta)
+{
+	HACLOG_UNUSED(base_handler);
+	HACLOG_UNUSED(meta);
+	return 0;
+}
+
+static int
+haclog_file_rotate_handler_after_write(haclog_handler_t *base_handler,
+									   haclog_meta_info_t *meta)
+{
+	HACLOG_UNUSED(meta);
+
+	haclog_file_rotate_handler_t *handler =
+		(haclog_file_rotate_handler_t *)base_handler;
+
+	if (handler->fp) {
+		fwrite("\n", 1, 1, handler->fp);
+		handler->offset += 1;
+		fflush(handler->fp);
+
+		if (handler->offset >= handler->max_bytes) {
+			if (haclog_file_rotate_handler_rotate(handler) != 0) {
+				fprintf(stderr, "failed rotate log handler");
+			}
+		}
+	}
+
+	return 0;
+}
+
 static int haclog_file_rotate_handler_write(struct haclog_handler *base_handler,
 											haclog_meta_info_t *meta,
 											const char *msg, int msglen)
@@ -50,14 +83,7 @@ static int haclog_file_rotate_handler_write(struct haclog_handler *base_handler,
 	int ret = 0;
 	if (handler->fp) {
 		ret = (int)fwrite(msg, 1, msglen, handler->fp);
-		fflush(handler->fp);
-
 		handler->offset += (long)ret;
-		if (handler->offset >= handler->max_bytes) {
-			if (haclog_file_rotate_handler_rotate(handler) != 0) {
-				fprintf(stderr, "failed rotate log handler");
-			}
-		}
 	}
 
 	return ret;
@@ -82,39 +108,31 @@ int haclog_file_rotate_handler_init(haclog_file_rotate_handler_t *handler,
 	memset(handler, 0, sizeof(*handler));
 
 	int ret = 0;
-	const char* abs_filepath = NULL;
+	const char *abs_filepath = NULL;
 	char log_path[HACLOG_MAX_PATH];
-	if (haclog_path_isabs(filepath))
-	{
+	if (haclog_path_isabs(filepath)) {
 		abs_filepath = filepath;
-	}
-	else
-	{
+	} else {
 		char cur_path[HACLOG_MAX_PATH];
 		ret = haclog_os_curdir(cur_path, sizeof(cur_path));
-		if (ret != 0)
-		{
+		if (ret != 0) {
 			return ret;
 		}
 
 		ret = haclog_path_join(cur_path, filepath, log_path, sizeof(log_path));
-		if (ret != 0)
-		{
+		if (ret != 0) {
 			return ret;
 		}
 
 		char log_dir[HACLOG_MAX_PATH];
 		ret = haclog_path_dirname(log_path, log_dir, sizeof(log_dir));
-		if (ret != 0)
-		{
+		if (ret != 0) {
 			return ret;
 		}
 
-		if (!haclog_path_exists(log_dir))
-		{
+		if (!haclog_path_exists(log_dir)) {
 			ret = haclog_os_mkdir(log_dir);
-			if (ret != 0)
-			{
+			if (ret != 0) {
 				return ret;
 			}
 		}
@@ -123,25 +141,25 @@ int haclog_file_rotate_handler_init(haclog_file_rotate_handler_t *handler,
 	}
 
 	handler->fp = fopen(abs_filepath, "ab+");
-	if (handler->fp == NULL)
-	{
+	if (handler->fp == NULL) {
 		return HACLOG_ERR_SYS_CALL;
 	}
 
-	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath)-1);
+	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath) - 1);
 	handler->max_bytes = max_bytes;
 	handler->backup_count = backup_count;
 
 	fseek(handler->fp, 0, SEEK_END);
 	handler->offset = ftell(handler->fp);
 
-	if (handler->offset >= handler->max_bytes)
-	{
+	if (handler->offset >= handler->max_bytes) {
 		haclog_file_rotate_handler_rotate(handler);
 	}
 
-	handler->base.fmt = haclog_handler_default_fmt;
+	handler->base.before_write = haclog_file_rotate_handler_before_write;
+	handler->base.meta_fmt = haclog_handler_default_fmt;
 	handler->base.write = haclog_file_rotate_handler_write;
+	handler->base.after_write = haclog_file_rotate_handler_after_write;
 	handler->base.destroy = haclog_file_rotate_handler_destroy;
 	handler->base.level = HACLOG_LEVEL_INFO;
 

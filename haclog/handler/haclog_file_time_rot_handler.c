@@ -4,84 +4,70 @@
 #include <string.h>
 #include <stdbool.h>
 
-static bool haclog_file_time_rot_handler_detect(
-	haclog_file_time_rot_handler_t *handler,
-	const haclog_meta_info_t *meta)
+static bool
+haclog_file_time_rot_handler_detect(haclog_file_time_rot_handler_t *handler,
+									const haclog_meta_info_t *meta)
 {
 	time_t sec = meta->ts.tv_sec;
-	if (sec == 0)
-	{
+	if (sec == 0) {
 		sec = time(NULL);
 	}
 
-	if (handler->last_sec >= sec)
-	{
+	if (handler->last_sec >= sec) {
 		return false;
 	}
 
 	struct tm curr_tm;
-	if (handler->use_local_time)
-	{
+	if (handler->use_local_time) {
 		localtime_r(&sec, &curr_tm);
-	}
-	else
-	{
+	} else {
 		gmtime_r(&sec, &curr_tm);
 	}
 
 	bool need_rot = false;
-	switch (handler->rotate_unit)
-	{
-		case HACLOG_TIME_ROTATE_UNIT_SEC:
-		{
-			int curr_sec_mod = curr_tm.tm_sec / handler->rotate_mod;
-			int last_sec_mod = handler->last_tm.tm_sec / handler->rotate_mod;
-			if (curr_sec_mod != last_sec_mod ||
-				curr_tm.tm_min != handler->last_tm.tm_min ||
-				curr_tm.tm_hour != handler->last_tm.tm_hour ||
-				curr_tm.tm_mday != handler->last_tm.tm_mday ||
-				curr_tm.tm_mon != handler->last_tm.tm_mon ||
-				curr_tm.tm_year != handler->last_tm.tm_year)
-			{
-				need_rot = true;
-			}
-		}break;
-		case HACLOG_TIME_ROTATE_UNIT_MIN:
-		{
-			int curr_min_mod = curr_tm.tm_min / handler->rotate_mod;
-			int last_min_mod = handler->last_tm.tm_min / handler->rotate_mod;
-			if (curr_min_mod != last_min_mod ||
-				curr_tm.tm_hour != handler->last_tm.tm_hour ||
-				curr_tm.tm_mday != handler->last_tm.tm_mday ||
-				curr_tm.tm_mon != handler->last_tm.tm_mon ||
-				curr_tm.tm_year != handler->last_tm.tm_year)
-			{
-				need_rot = true;
-			}
-		}break;
-		case HACLOG_TIME_ROTATE_UNIT_HOUR:
-		{
-			int curr_hour_mod = curr_tm.tm_hour / handler->rotate_mod;
-			int last_hour_mod = handler->last_tm.tm_hour / handler->rotate_mod;
-			if (curr_hour_mod != last_hour_mod ||
-				curr_tm.tm_mday != handler->last_tm.tm_mday ||
-				curr_tm.tm_mon != handler->last_tm.tm_mon ||
-				curr_tm.tm_year != handler->last_tm.tm_year)
-			{
-				need_rot = true;
-			}
-		}break;
-		case HACLOG_TIME_ROTATE_UNIT_DAY:
-		{
-			int curr_day_mod = curr_tm.tm_mday / handler->rotate_mod;
-			int last_day_mod = handler->last_tm.tm_mday / handler->rotate_mod;
-			if (curr_day_mod != last_day_mod ||
-				curr_tm.tm_mon != handler->last_tm.tm_mon ||
-				curr_tm.tm_year != handler->last_tm.tm_year)
-			{
-				need_rot = true;
-			}
-		}break;
+	switch (handler->rotate_unit) {
+	case HACLOG_TIME_ROTATE_UNIT_SEC: {
+		int curr_sec_mod = curr_tm.tm_sec / handler->rotate_mod;
+		int last_sec_mod = handler->last_tm.tm_sec / handler->rotate_mod;
+		if (curr_sec_mod != last_sec_mod ||
+			curr_tm.tm_min != handler->last_tm.tm_min ||
+			curr_tm.tm_hour != handler->last_tm.tm_hour ||
+			curr_tm.tm_mday != handler->last_tm.tm_mday ||
+			curr_tm.tm_mon != handler->last_tm.tm_mon ||
+			curr_tm.tm_year != handler->last_tm.tm_year) {
+			need_rot = true;
+		}
+	} break;
+	case HACLOG_TIME_ROTATE_UNIT_MIN: {
+		int curr_min_mod = curr_tm.tm_min / handler->rotate_mod;
+		int last_min_mod = handler->last_tm.tm_min / handler->rotate_mod;
+		if (curr_min_mod != last_min_mod ||
+			curr_tm.tm_hour != handler->last_tm.tm_hour ||
+			curr_tm.tm_mday != handler->last_tm.tm_mday ||
+			curr_tm.tm_mon != handler->last_tm.tm_mon ||
+			curr_tm.tm_year != handler->last_tm.tm_year) {
+			need_rot = true;
+		}
+	} break;
+	case HACLOG_TIME_ROTATE_UNIT_HOUR: {
+		int curr_hour_mod = curr_tm.tm_hour / handler->rotate_mod;
+		int last_hour_mod = handler->last_tm.tm_hour / handler->rotate_mod;
+		if (curr_hour_mod != last_hour_mod ||
+			curr_tm.tm_mday != handler->last_tm.tm_mday ||
+			curr_tm.tm_mon != handler->last_tm.tm_mon ||
+			curr_tm.tm_year != handler->last_tm.tm_year) {
+			need_rot = true;
+		}
+	} break;
+	case HACLOG_TIME_ROTATE_UNIT_DAY: {
+		int curr_day_mod = curr_tm.tm_mday / handler->rotate_mod;
+		int last_day_mod = handler->last_tm.tm_mday / handler->rotate_mod;
+		if (curr_day_mod != last_day_mod ||
+			curr_tm.tm_mon != handler->last_tm.tm_mon ||
+			curr_tm.tm_year != handler->last_tm.tm_year) {
+			need_rot = true;
+		}
+	} break;
 	}
 
 	handler->last_sec = sec;
@@ -90,71 +76,86 @@ static bool haclog_file_time_rot_handler_detect(
 	return need_rot;
 }
 
-static int haclog_file_time_rot_handler_rotate(
-	haclog_file_time_rot_handler_t *handler)
+static int
+haclog_file_time_rot_handler_rotate(haclog_file_time_rot_handler_t *handler)
 {
-	if (handler->fp)
-	{
+	if (handler->fp) {
 		fclose(handler->fp);
 		handler->fp = NULL;
 	}
 
 	char buf[HACLOG_MAX_PATH];
-	switch (handler->rotate_unit)
-	{
-		case HACLOG_TIME_ROTATE_UNIT_SEC:
-		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d%02d",
-				handler->filepath,
-				handler->last_tm.tm_year + 1900,
-				handler->last_tm.tm_mon + 1,
-				handler->last_tm.tm_mday,
-				handler->last_tm.tm_hour,
-				handler->last_tm.tm_min,
-				handler->last_tm.tm_sec);
+	switch (handler->rotate_unit) {
+	case HACLOG_TIME_ROTATE_UNIT_SEC: {
+		snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d%02d",
+				 handler->filepath, handler->last_tm.tm_year + 1900,
+				 handler->last_tm.tm_mon + 1, handler->last_tm.tm_mday,
+				 handler->last_tm.tm_hour, handler->last_tm.tm_min,
+				 handler->last_tm.tm_sec);
 
-		}break;
-		case HACLOG_TIME_ROTATE_UNIT_MIN:
-		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d",
-				handler->filepath,
-				handler->last_tm.tm_year + 1900,
-				handler->last_tm.tm_mon + 1,
-				handler->last_tm.tm_mday,
-				handler->last_tm.tm_hour,
-				handler->last_tm.tm_min);
-		}break;
-		case HACLOG_TIME_ROTATE_UNIT_HOUR:
-		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d",
-				handler->filepath,
-				handler->last_tm.tm_year + 1900,
-				handler->last_tm.tm_mon + 1,
-				handler->last_tm.tm_mday,
-				handler->last_tm.tm_hour);
-		}break;
-		case HACLOG_TIME_ROTATE_UNIT_DAY:
-		{
-			snprintf(buf, sizeof(buf), "%s.%d%02d%02d",
-				handler->filepath,
-				handler->last_tm.tm_year + 1900,
-				handler->last_tm.tm_mon + 1,
-				handler->last_tm.tm_mday);
-		}break;
+	} break;
+	case HACLOG_TIME_ROTATE_UNIT_MIN: {
+		snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d", handler->filepath,
+				 handler->last_tm.tm_year + 1900, handler->last_tm.tm_mon + 1,
+				 handler->last_tm.tm_mday, handler->last_tm.tm_hour,
+				 handler->last_tm.tm_min);
+	} break;
+	case HACLOG_TIME_ROTATE_UNIT_HOUR: {
+		snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d", handler->filepath,
+				 handler->last_tm.tm_year + 1900, handler->last_tm.tm_mon + 1,
+				 handler->last_tm.tm_mday, handler->last_tm.tm_hour);
+	} break;
+	case HACLOG_TIME_ROTATE_UNIT_DAY: {
+		snprintf(buf, sizeof(buf), "%s.%d%02d%02d", handler->filepath,
+				 handler->last_tm.tm_year + 1900, handler->last_tm.tm_mon + 1,
+				 handler->last_tm.tm_mday);
+	} break;
 	}
 
 	handler->fp = fopen(buf, "ab+");
-	if (handler->fp == NULL)
-	{
+	if (handler->fp == NULL) {
 		return HACLOG_ERR_SYS_CALL;
 	}
 
 	return 0;
 }
 
-static int haclog_file_time_rot_handler_write(struct haclog_handler *base_handler,
-											haclog_meta_info_t *meta,
-											const char *msg, int msglen)
+static int
+haclog_file_time_rot_handler_before_write(haclog_handler_t *base_handler,
+										  haclog_meta_info_t *meta)
+{
+	HACLOG_UNUSED(base_handler);
+	HACLOG_UNUSED(meta);
+	return 0;
+}
+
+static int
+haclog_file_time_rot_handler_after_write(haclog_handler_t *base_handler,
+										 haclog_meta_info_t *meta)
+{
+	HACLOG_UNUSED(meta);
+
+	haclog_file_time_rot_handler_t *handler =
+		(haclog_file_time_rot_handler_t *)base_handler;
+
+	if (handler->fp) {
+		fwrite("\n", 1, 1, handler->fp);
+		fflush(handler->fp);
+
+		if (haclog_file_time_rot_handler_detect(handler, meta)) {
+			if (haclog_file_time_rot_handler_rotate(handler) != 0) {
+				fprintf(stderr, "failed rotate log handler");
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int
+haclog_file_time_rot_handler_write(struct haclog_handler *base_handler,
+								   haclog_meta_info_t *meta, const char *msg,
+								   int msglen)
 {
 	HACLOG_UNUSED(meta);
 
@@ -164,15 +165,6 @@ static int haclog_file_time_rot_handler_write(struct haclog_handler *base_handle
 	int ret = 0;
 	if (handler->fp) {
 		ret = (int)fwrite(msg, 1, msglen, handler->fp);
-		fflush(handler->fp);
-
-		if (haclog_file_time_rot_handler_detect(handler, meta))
-		{
-			if (haclog_file_time_rot_handler_rotate(handler) != 0)
-			{
-				fprintf(stderr, "failed rotate log handler");
-			}
-		}
 	}
 
 	return ret;
@@ -231,12 +223,9 @@ int haclog_file_time_rotate_handler_init(
 
 	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath) - 1);
 	handler->last_sec = time(NULL);
-	if (handler->use_local_time)
-	{
+	if (handler->use_local_time) {
 		localtime_r(&handler->last_sec, &handler->last_tm);
-	}
-	else
-	{
+	} else {
 		gmtime_r(&handler->last_sec, &handler->last_tm);
 	}
 
@@ -245,13 +234,14 @@ int haclog_file_time_rotate_handler_init(
 	handler->use_local_time = use_local_time;
 
 	ret = haclog_file_time_rot_handler_rotate(handler);
-	if (ret != 0)
-	{
+	if (ret != 0) {
 		return ret;
 	}
 
-	handler->base.fmt = haclog_handler_default_fmt;
+	handler->base.before_write = haclog_file_time_rot_handler_before_write;
+	handler->base.meta_fmt = haclog_handler_default_fmt;
 	handler->base.write = haclog_file_time_rot_handler_write;
+	handler->base.after_write = haclog_file_time_rot_handler_after_write;
 	handler->base.destroy = haclog_file_time_rot_handler_destroy;
 	handler->base.level = HACLOG_LEVEL_INFO;
 

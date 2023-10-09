@@ -19,6 +19,9 @@ HACLOG_EXTERN_C_BEGIN
 typedef struct haclog_console_handler {
 	haclog_handler_t base; //!< base log handler
 	int enable_color; //!< enable color
+#if HACLOG_PLATFORM_WINDOWS
+	WORD sb_attrs;
+#endif
 } haclog_console_handler_t;
 
 /**

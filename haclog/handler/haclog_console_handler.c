@@ -53,19 +53,12 @@
 #define UNIX_TERMINAL_COLOR_CYN UNIX_TERMINAL_COLOR(36)
 #define UNIX_TERMINAL_COLOR_WHT UNIX_TERMINAL_COLOR(37)
 
-static int haclog_console_handler_write(struct haclog_handler *base_handler,
-										haclog_meta_info_t *meta,
-										const char *msg, int msglen)
+static int haclog_console_handler_before_write(haclog_handler_t *base_handler,
+											   haclog_meta_info_t *meta)
 {
-	FILE *fp = stdout;
-	if (meta->loc->level >= HACLOG_LEVEL_WARNING) {
-		fp = stderr;
-	}
-
 	haclog_console_handler_t *handler =
 		(haclog_console_handler_t *)base_handler;
 
-	int ret = 0;
 	if (handler->enable_color && meta->loc->level >= HACLOG_LEVEL_WARNING) {
 #if MUGGLE_PLATFORM_WINDOWS
 		const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -73,10 +66,7 @@ static int haclog_console_handler_write(struct haclog_handler *base_handler,
 		// get the current text color
 		CONSOLE_SCREEN_BUFFER_INFO sb_info;
 		GetConsoleScreenBufferInfo(stdout_handle, &sb_info);
-		const WORD old_sb_attrs = sb_info.wAttributes;
-
-		// change text color
-		fflush(fp);
+		handler->sb_attrs = sb_info.wAttributes;
 
 		if (msg->level >= MUGGLE_LEVEL_ERROR) {
 			SetConsoleTextAttribute(stdout_handle,
@@ -86,32 +76,59 @@ static int haclog_console_handler_write(struct haclog_handler *base_handler,
 													   FOREGROUND_GREEN |
 													   FOREGROUND_INTENSITY);
 		}
-
-		ret = (int)fwrite(msg, 1, msglen, fp);
-
-		fflush(fp);
-
-		// restores text color
-		SetConsoleTextAttribute(stdout_handle, old_sb_attrs);
 #else
 		if (meta->loc->level >= HACLOG_LEVEL_ERROR) {
 			fwrite(UNIX_TERMINAL_COLOR_RED, 1, strlen(UNIX_TERMINAL_COLOR_RED),
-				   fp);
+				   stderr);
 		} else {
 			fwrite(UNIX_TERMINAL_COLOR_YEL, 1, strlen(UNIX_TERMINAL_COLOR_YEL),
-				   fp);
+				   stderr);
 		}
-		ret = (int)fwrite(msg, 1, msglen, fp);
-		fwrite(UNIX_TERMINAL_COLOR_RST, 1, strlen(UNIX_TERMINAL_COLOR_RST), fp);
-
-		fflush(fp);
 #endif
-	} else {
-		ret = (int)fwrite(msg, 1, msglen, fp);
-		fflush(fp);
 	}
 
-	return ret;
+	return 0;
+}
+
+static int haclog_console_handler_after_write(haclog_handler_t *base_handler,
+											  haclog_meta_info_t *meta)
+{
+	haclog_console_handler_t *handler =
+		(haclog_console_handler_t *)base_handler;
+
+	FILE *fp = stdout;
+	if (meta->loc->level >= HACLOG_LEVEL_WARNING) {
+		fp = stderr;
+	}
+	fwrite("\n", 1, 1, fp);
+
+	if (handler->enable_color && meta->loc->level >= HACLOG_LEVEL_WARNING) {
+#if MUGGLE_PLATFORM_WINDOWS
+		const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(stdout_handle, handler->sb_attrs);
+#else
+		fwrite(UNIX_TERMINAL_COLOR_RST, 1, strlen(UNIX_TERMINAL_COLOR_RST),
+			   stderr);
+#endif
+	}
+
+	fflush(fp);
+
+	return 0;
+}
+
+static int haclog_console_handler_write(haclog_handler_t *base_handler,
+										haclog_meta_info_t *meta,
+										const char *msg, int msglen)
+{
+	HACLOG_UNUSED(base_handler);
+
+	FILE *fp = stdout;
+	if (meta->loc->level >= HACLOG_LEVEL_WARNING) {
+		fp = stderr;
+	}
+
+	return (int)fwrite(msg, 1, msglen, fp);
 }
 
 static void haclog_console_handler_destroy(struct haclog_handler *handler)
@@ -125,8 +142,10 @@ int haclog_console_handler_init(haclog_console_handler_t *handler,
 	memset(handler, 0, sizeof(*handler));
 	handler->enable_color = enable_color;
 
-	handler->base.fmt = haclog_handler_default_fmt;
+	handler->base.before_write = haclog_console_handler_before_write;
+	handler->base.meta_fmt = haclog_handler_default_fmt;
 	handler->base.write = haclog_console_handler_write;
+	handler->base.after_write = haclog_console_handler_after_write;
 	handler->base.destroy = haclog_console_handler_destroy;
 	handler->base.level = HACLOG_LEVEL_INFO;
 

@@ -7,7 +7,7 @@
 
 static void haclog_consume(haclog_context_t *ctx,
 						   haclog_thread_context_t *th_ctx, char *msg,
-						   char *buf, unsigned long bufsize)
+						   unsigned long bufsize)
 {
 	haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;
 	haclog_meta_info_t meta = {};
@@ -16,6 +16,8 @@ static void haclog_consume(haclog_context_t *ctx,
 	int n = 0;
 
 	while (1) {
+		// TODO: 这里在外部过滤一下 level
+
 		n = haclog_printf_primitive_format(bytes_buf, &meta, w, msg, bufsize);
 		if (n < 0) {
 			break;
@@ -29,12 +31,7 @@ static void haclog_consume(haclog_context_t *ctx,
 				continue;
 			}
 
-			if (handler->fmt == NULL) {
-				haclog_debug_break();
-				continue;
-			}
-			n = handler->fmt(&meta, msg, n, buf, bufsize);
-			handler->write(handler, &meta, buf, n);
+			haclog_handler_write(handler, &meta, msg, n);
 		}
 	}
 }
@@ -56,18 +53,12 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 		return NULL;
 	}
 
-	char *buf = (char *)malloc(bufsize);
-	if (buf == NULL) {
-		haclog_debug_break();
-		return NULL;
-	}
-
 	while (1) {
 		haclog_spinlock_lock(&ctx->spinlock);
 
 		haclog_thread_context_list_t *node = ctx->th_ctx_head.next;
 		while (node) {
-			haclog_consume(ctx, node->th_ctx, msg, buf, bufsize);
+			haclog_consume(ctx, node->th_ctx, msg, bufsize);
 			node = node->next;
 		}
 
@@ -75,6 +66,8 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 
 		haclog_thread_yield();
 	}
+
+	free(msg);
 
 	return 0;
 }
