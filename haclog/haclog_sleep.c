@@ -44,7 +44,7 @@ int haclog_nsleep(unsigned long ns)
 	return 0;
 	#else
 	static_assert(0, "_POSIX_C_SOURCE >= 199309L is required");
-	return HACLOG_ERR_SYSCALL;
+	return HACLOG_ERR_SYS_CALL;
 	#endif /* _POSIX_C_SOURCE >= 199309L */
 #endif
 }
