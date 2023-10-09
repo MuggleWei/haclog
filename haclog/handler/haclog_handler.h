@@ -31,20 +31,6 @@ enum {
 struct haclog_handler;
 
 /**
- * @brief prototype of log format function
- *
- * @param meta     log meta info
- * @param buf      the formated meta message output buffer
- * @param bufsize  size of buffer
- *
- * @return
- *   - on success, return number of bytes in formated message (exclude '\0')
- *   - on failed, return -1
- */
-typedef int (*func_haclog_handler_meta_fmt)(haclog_meta_info_t *meta, char *buf,
-									   size_t bufsize);
-
-/**
  * @brief before write
  *
  * @param handler  handler pointer
@@ -71,10 +57,22 @@ typedef int (*func_haclog_handler_after_write)(struct haclog_handler *handler,
 											   haclog_meta_info_t *meta);
 
 /**
+ * @brief prototype of write meta
+ *
+ * @param handler  handler pointer
+ * @param meta     log meta info
+ *
+ * @return
+ *   - on success, return number of bytes in formated message (exclude '\0')
+ *   - on failed, return -1
+ */
+typedef int (*func_haclog_handler_write_meta)(struct haclog_handler *handler,
+											  haclog_meta_info_t *meta);
+
+/**
  * @brief prototype of log handler write function
  *
  * @param handler    handler pointer
- * @param meta       log meta info
  * @param msg        log message
  * @param msglen     length of log message
  *
@@ -83,8 +81,21 @@ typedef int (*func_haclog_handler_after_write)(struct haclog_handler *handler,
  *   - on failed, return -1
  */
 typedef int (*func_haclog_handler_write)(struct haclog_handler *handler,
-										 haclog_meta_info_t *meta,
 										 const char *msg, int msglen);
+
+/**
+ * @brief prototype of log handler write variadic arguments
+ *
+ * @param handler  handler pointer
+ * @param fmt_str  format string
+ * @param ...      variadic arguments
+ *
+ * @return
+ *   - on success, return number of bytes writed
+ *   - on failed, return -1
+ */
+typedef int (*func_haclog_handler_writev)(struct haclog_handler *handler,
+										  const char *fmt_str, ...);
 
 /**
  * @brief destroy log handler
@@ -98,8 +109,9 @@ typedef void (*func_haclog_handler_destroy)(struct haclog_handler *handler);
  */
 typedef struct haclog_handler {
 	func_haclog_handler_before_write before_write;
-	func_haclog_handler_meta_fmt meta_fmt;
+	func_haclog_handler_write_meta write_meta;
 	func_haclog_handler_write write;
+	func_haclog_handler_writev writev;
 	func_haclog_handler_after_write after_write;
 	func_haclog_handler_destroy destroy;
 	int level;
@@ -167,14 +179,12 @@ int haclog_handler_write(haclog_handler_t *handler, haclog_meta_info_t *meta,
  * @brief 
  *
  * @param meta
- * @param buf
- * @param bufsize
  *
  * @return 
  */
 HACLOG_EXPORT
-int haclog_handler_default_fmt(haclog_meta_info_t *meta, char *buf,
-							   size_t bufsize);
+int haclog_handler_default_write_meta(haclog_handler_t *handler,
+									  haclog_meta_info_t *meta);
 
 HACLOG_EXTERN_C_END
 

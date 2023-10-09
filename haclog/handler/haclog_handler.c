@@ -44,15 +44,13 @@ int haclog_handler_write(haclog_handler_t *handler, haclog_meta_info_t *meta,
 
 	handler->before_write(handler, meta);
 
-	char meta_buf[1024];
-	n = handler->meta_fmt(meta, meta_buf, sizeof(meta_buf));
+	n = handler->write_meta(handler, meta);
 	if (n > 0) {
-		handler->write(handler, meta, meta_buf, n);
 		total_bytes += n;
 	}
 
 	if (msglen > 0) {
-		n = handler->write(handler, meta, msg, msglen);
+		n = handler->write(handler, msg, msglen);
 		if (n > 0) {
 			total_bytes += n;
 		}
@@ -63,8 +61,8 @@ int haclog_handler_write(haclog_handler_t *handler, haclog_meta_info_t *meta,
 	return total_bytes;
 }
 
-int haclog_handler_default_fmt(haclog_meta_info_t *meta, char *buf,
-							   size_t bufsize)
+int haclog_handler_default_write_meta(haclog_handler_t *handler,
+									  haclog_meta_info_t *meta)
 {
 	const char *level = haclog_level_to_str(meta->loc->level);
 
@@ -74,11 +72,10 @@ int haclog_handler_default_fmt(haclog_meta_info_t *meta, char *buf,
 	struct tm t;
 	gmtime_r(&meta->ts.tv_sec, &t);
 
-	return (int)snprintf(buf, bufsize,
-						 "%s|%d-%02d-%02dT%02d:%02d:%02d.%09d|%s:%u|%s|%llu - ",
-						 level, (int)t.tm_year + 1900, (int)t.tm_mon + 1,
-						 (int)t.tm_mday, (int)t.tm_hour, (int)t.tm_min,
-						 (int)t.tm_sec, (int)meta->ts.tv_nsec, filename,
-						 (unsigned int)meta->loc->line, meta->loc->func,
-						 (unsigned long long)meta->tid);
+	return handler->writev(
+		handler, "%s|%d-%02d-%02dT%02d:%02d:%02d.%09d|%s:%u|%s|%llu - ", level,
+		(int)t.tm_year + 1900, (int)t.tm_mon + 1, (int)t.tm_mday,
+		(int)t.tm_hour, (int)t.tm_min, (int)t.tm_sec, (int)meta->ts.tv_nsec,
+		filename, (unsigned int)meta->loc->line, meta->loc->func,
+		(unsigned long long)meta->tid);
 }

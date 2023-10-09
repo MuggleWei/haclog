@@ -13,11 +13,13 @@
 
 #include "haclog/haclog_macro.h"
 #include "haclog/handler/haclog_handler.h"
+#include <stdio.h>
 
 HACLOG_EXTERN_C_BEGIN
 
 typedef struct haclog_console_handler {
 	haclog_handler_t base; //!< base log handler
+	FILE *fp; //!< current file handle
 	int enable_color; //!< enable color
 #if HACLOG_PLATFORM_WINDOWS
 	WORD sb_attrs;

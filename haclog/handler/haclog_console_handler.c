@@ -2,6 +2,7 @@
 #include "haclog/haclog_vsprintf.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 /*
  * unix terminal colors
@@ -60,6 +61,8 @@ static int haclog_console_handler_before_write(haclog_handler_t *base_handler,
 		(haclog_console_handler_t *)base_handler;
 
 	if (handler->enable_color && meta->loc->level >= HACLOG_LEVEL_WARNING) {
+		handler->fp = stderr;
+
 #if HACLOG_PLATFORM_WINDOWS
 		const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -79,12 +82,14 @@ static int haclog_console_handler_before_write(haclog_handler_t *base_handler,
 #else
 		if (meta->loc->level >= HACLOG_LEVEL_ERROR) {
 			fwrite(UNIX_TERMINAL_COLOR_RED, 1, strlen(UNIX_TERMINAL_COLOR_RED),
-				   stderr);
+				   handler->fp);
 		} else {
 			fwrite(UNIX_TERMINAL_COLOR_YEL, 1, strlen(UNIX_TERMINAL_COLOR_YEL),
-				   stderr);
+				   handler->fp);
 		}
 #endif
+	} else {
+		handler->fp = stdout;
 	}
 
 	return 0;
@@ -96,11 +101,7 @@ static int haclog_console_handler_after_write(haclog_handler_t *base_handler,
 	haclog_console_handler_t *handler =
 		(haclog_console_handler_t *)base_handler;
 
-	FILE *fp = stdout;
-	if (meta->loc->level >= HACLOG_LEVEL_WARNING) {
-		fp = stderr;
-	}
-	fwrite("\n", 1, 1, fp);
+	fwrite("\n", 1, 1, handler->fp);
 
 	if (handler->enable_color && meta->loc->level >= HACLOG_LEVEL_WARNING) {
 #if HACLOG_PLATFORM_WINDOWS
@@ -112,23 +113,31 @@ static int haclog_console_handler_after_write(haclog_handler_t *base_handler,
 #endif
 	}
 
-	fflush(fp);
+	fflush(handler->fp);
 
 	return 0;
 }
 
 static int haclog_console_handler_write(haclog_handler_t *base_handler,
-										haclog_meta_info_t *meta,
 										const char *msg, int msglen)
 {
-	HACLOG_UNUSED(base_handler);
+	haclog_console_handler_t *handler =
+		(haclog_console_handler_t *)base_handler;
+	return (int)fwrite(msg, 1, msglen, handler->fp);
+}
 
-	FILE *fp = stdout;
-	if (meta->loc->level >= HACLOG_LEVEL_WARNING) {
-		fp = stderr;
-	}
+static int haclog_console_handler_writev(haclog_handler_t *base_handler,
+										 const char *fmt_str, ...)
+{
+	haclog_console_handler_t *handler =
+		(haclog_console_handler_t *)base_handler;
 
-	return (int)fwrite(msg, 1, msglen, fp);
+	va_list args;
+	va_start(args, fmt_str);
+	int n = vfprintf(handler->fp, fmt_str, args);
+	va_end(args);
+
+	return n;
 }
 
 static void haclog_console_handler_destroy(struct haclog_handler *handler)
@@ -143,8 +152,9 @@ int haclog_console_handler_init(haclog_console_handler_t *handler,
 	handler->enable_color = enable_color;
 
 	handler->base.before_write = haclog_console_handler_before_write;
-	handler->base.meta_fmt = haclog_handler_default_fmt;
+	handler->base.write_meta = haclog_handler_default_write_meta;
 	handler->base.write = haclog_console_handler_write;
+	handler->base.writev = haclog_console_handler_writev;
 	handler->base.after_write = haclog_console_handler_after_write;
 	handler->base.destroy = haclog_console_handler_destroy;
 	handler->base.level = HACLOG_LEVEL_INFO;

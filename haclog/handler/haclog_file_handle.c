@@ -4,6 +4,7 @@
 #include "haclog_file_handler.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 static int haclog_file_handler_before_write(haclog_handler_t *base_handler,
 											haclog_meta_info_t *meta)
@@ -28,16 +29,31 @@ static int haclog_file_handler_after_write(haclog_handler_t *base_handler,
 }
 
 static int haclog_file_handler_write(struct haclog_handler *base_handler,
-									 haclog_meta_info_t *meta, const char *msg,
+									 const char *msg,
 									 int msglen)
 {
-	HACLOG_UNUSED(meta);
-
 	haclog_file_handler_t *handler = (haclog_file_handler_t *)base_handler;
 
 	int ret = 0;
 	if (handler->fp) {
 		ret = (int)fwrite(msg, 1, msglen, handler->fp);
+	}
+
+	return ret;
+}
+
+static int haclog_file_handler_writev(haclog_handler_t *base_handler,
+										 const char *fmt_str, ...)
+{
+	haclog_file_handler_t *handler =
+		(haclog_file_handler_t *)base_handler;
+
+	int ret = 0;
+	if (handler->fp) {
+		va_list args;
+		va_start(args, fmt_str);
+		ret = vfprintf(handler->fp, fmt_str, args);
+		va_end(args);
 	}
 
 	return ret;
@@ -96,8 +112,9 @@ int haclog_file_handler_init(haclog_file_handler_t *handler,
 	}
 
 	handler->base.before_write = haclog_file_handler_before_write;
-	handler->base.meta_fmt = haclog_handler_default_fmt;
+	handler->base.write_meta = haclog_handler_default_write_meta;
 	handler->base.write = haclog_file_handler_write;
+	handler->base.writev = haclog_file_handler_writev;
 	handler->base.after_write = haclog_file_handler_after_write;
 	handler->base.destroy = haclog_file_handler_destroy;
 	handler->base.level = HACLOG_LEVEL_INFO;
