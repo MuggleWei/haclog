@@ -4,8 +4,9 @@
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 
-#define MSG_CNT 10000
-#define NUM_THREAD 8
+#define TOTAL_PER_ROUND 80000
+static int MSG_CNT = 0;
+static int NUM_THREAD = 0;
 #define ROUND 16
 #define ROUND_INTERVAL (100 * 1000 * 1000)
 
@@ -64,13 +65,12 @@ haclog_thread_ret_t run(void *args)
 void add_file_handler()
 {
 	static haclog_file_handler_t handler = {};
-	if (haclog_file_handler_init(&handler,
-								 "logs/multi_thread_benchmark.log", "w") != 0) {
+	if (haclog_file_handler_init(&handler, "logs/multi_thread_benchmark.log",
+								 "w") != 0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);
 	}
-	haclog_handler_set_level((haclog_handler_t *)&handler,
-							 HACLOG_LEVEL_DEBUG);
+	haclog_handler_set_level((haclog_handler_t *)&handler, HACLOG_LEVEL_DEBUG);
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
 
@@ -83,8 +83,7 @@ void add_file_rotate_handler()
 		fprintf(stderr, "failed init file rotate handler");
 		exit(EXIT_FAILURE);
 	}
-	haclog_handler_set_level((haclog_handler_t *)&handler,
-							 HACLOG_LEVEL_DEBUG);
+	haclog_handler_set_level((haclog_handler_t *)&handler, HACLOG_LEVEL_DEBUG);
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
 
@@ -110,6 +109,14 @@ int main()
 	haclog_backend_run();
 
 	// prepare datas
+	NUM_THREAD = haclog_thread_hardware_concurrency();
+	MSG_CNT = TOTAL_PER_ROUND / NUM_THREAD;
+
+	fprintf(stdout, "MSG_CNT: %d\n", MSG_CNT);
+	fprintf(stdout, "NUM_THREAD: %d\n", NUM_THREAD);
+	fprintf(stdout, "ROUND: %d\n", ROUND);
+	fprintf(stdout, "ROUND_INTERVAL: %d ns\n", ROUND_INTERVAL);
+
 	srand(time(NULL));
 	log_msg_t *arr = (log_msg_t *)malloc(sizeof(log_msg_t) * MSG_CNT);
 	for (int i = 0; i < MSG_CNT; i++) {
