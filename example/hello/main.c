@@ -66,17 +66,11 @@ int main()
 	haclog_thread_context_init();
 
 	LOG_TRACE("trace message");
-	haclog_nsleep(500 * 1000 * 1000);
 	LOG_DEBUG("debug message");
-	haclog_nsleep(500 * 1000 * 1000);
 	LOG_INFO("info message");
-	haclog_nsleep(500 * 1000 * 1000);
 	LOG_WARNING("warning message");
-	haclog_nsleep(500 * 1000 * 1000);
 	LOG_ERROR("error message");
-	haclog_nsleep(500 * 1000 * 1000);
 	LOG_FATAL("fatal message");
-	haclog_nsleep(500 * 1000 * 1000);
 
 	LOG_INFO("bye");
 

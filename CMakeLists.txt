@@ -338,6 +338,14 @@ if (HACLOG_BUILD_EXAMPLE)
 			add_example(${subdir} ${example_root_dir}/${subdir})
 		ENDIF()
 	ENDFOREACH()
+
+	set(dev_example_root_dir ${CMAKE_CURRENT_LIST_DIR}/dev_test)
+	FILE(GLOB subdirs RELATIVE ${dev_example_root_dir} ${dev_example_root_dir}/*)
+	FOREACH(subdir ${subdirs})
+		IF(IS_DIRECTORY ${dev_example_root_dir}/${subdir})
+			add_example(${subdir} ${dev_example_root_dir}/${subdir})
+		ENDIF()
+	ENDFOREACH()
 endif()
 
 ################################
