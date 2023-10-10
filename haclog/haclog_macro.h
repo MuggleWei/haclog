@@ -63,6 +63,13 @@
 	// Unknown compiler
 #endif
 
+// constexpr
+#ifdef __cplusplus
+	#define haclog_constexpr constexpr
+#else
+	#define haclog_constexpr
+#endif
+
 // unused
 #define HACLOG_UNUSED(x) (void)x
 

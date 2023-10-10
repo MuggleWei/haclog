@@ -40,7 +40,7 @@ static_assert(0, "haclog can't find c or c++ version");
 			static haclog_spinlock_t spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK; \
 			haclog_spinlock_lock(&spinlock);                                   \
 			if (primitive == NULL) {                                           \
-				const haclog_printf_loc_t loc = {                              \
+				haclog_constexpr const haclog_printf_loc_t loc = {             \
 					.file = __FILE__,                                          \
 					.func = __FUNCTION__,                                      \
 					.line = __LINE__,                                          \
@@ -54,15 +54,16 @@ static_assert(0, "haclog can't find c or c++ version");
 										  ##__VA_ARGS__);                      \
 	} while (0)
 
-#define HACLOG_LOG_DEFAULT(level, format, ...)                             \
-	do {                                                                   \
-		haclog_thread_context_t *th_ctx = haclog_thread_context_get();     \
-		if (th_ctx) {                                                      \
-			haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;          \
-			if (bytes_buf) {                                               \
-				HACLOG_SERIALIZE(bytes_buf, level, format, ##__VA_ARGS__); \
-			}                                                              \
-		}                                                                  \
+#define HACLOG_LOG_DEFAULT(level, format, ...)                                \
+	do {                                                                      \
+		haclog_thread_context_t *th_ctx = haclog_thread_context_get();        \
+		if (th_ctx) {                                                         \
+			haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;             \
+			if (bytes_buf) {                                                  \
+				haclog_constexpr static const char *const_fmt = format;       \
+				HACLOG_SERIALIZE(bytes_buf, level, const_fmt, ##__VA_ARGS__); \
+			}                                                                 \
+		}                                                                     \
 	} while (0)
 
 #define HACLOG_TRACE(format, ...) \
