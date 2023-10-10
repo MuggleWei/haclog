@@ -9,7 +9,8 @@ void setUp()
 
 void tearDown()
 {
-	haclog_thread_context_cleanup();
+	// without consumer, it will be stuck
+	// haclog_thread_context_cleanup();
 }
 
 #define TEST_SERIALIZE_FMT(fmt_str, ...)                                      \
