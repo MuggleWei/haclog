@@ -4,16 +4,16 @@
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 
-// #define TOTAL_PER_ROUND 80000
-// static int MSG_CNT = 0;
-// static int NUM_THREAD = 0;
+#define TOTAL_PER_ROUND 50000
+static int MSG_CNT = 0;
+static int NUM_THREAD = 0;
 
-#define TOTAL_PER_ROUND 0
-static int MSG_CNT = 5000;
-static int NUM_THREAD = 16;
+// #define TOTAL_PER_ROUND 0
+// static int MSG_CNT = 5000;
+// static int NUM_THREAD = 16;
 
 #define ROUND 16
-#define ROUND_INTERVAL (100 * 1000 * 1000)
+#define ROUND_INTERVAL (200 * 1000 * 1000)
 
 typedef struct log_msg {
 	uint64_t u64;

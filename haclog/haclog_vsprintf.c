@@ -946,6 +946,9 @@ typedef struct haclog_str_cache {
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed); \
 	} while (1);
 
+#define HACLOG_CACHE_LINE 64
+#define HACLOG_CACHE_INTERVAL (2 * HACLOG_CACHE_LINE)
+
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
 									   const char *fmt_str, ...)
@@ -964,6 +967,7 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	haclog_atomic_int w_hdr = 0;
 	haclog_atomic_int w_const_args = 0;
 	haclog_atomic_int w_str = 0;
+	haclog_atomic_int w_cache_line = 0;
 	char *p = NULL;
 	unsigned int fetch_loop_cnt = 0;
 
@@ -1098,6 +1102,8 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 
 	// serialize string arguments
 	HACLOG_FETCH_W(bytes_buf, r, w, extra_len, w_str);
+	w = w_str + extra_len;
+
 	p = haclog_bytes_buffer_get(bytes_buf, w_str);
 
 	for (unsigned int i = 0; i < n_str_idx; ++i) {
@@ -1112,6 +1118,10 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 		p += str_cache[HACLOG_MAX_STR_CACHE].slen;
 	}
 
+	// cache line
+	HACLOG_FETCH_W(bytes_buf, r, w, HACLOG_CACHE_INTERVAL, w_cache_line);
+	w = w_cache_line + HACLOG_CACHE_INTERVAL;
+
 	// fillup hdr
 	haclog_serialize_hdr_t *hdr =
 		(haclog_serialize_hdr_t *)haclog_bytes_buffer_get(bytes_buf, w_hdr);
@@ -1119,16 +1129,11 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	hdr->pos_const = w_const_args;
 	hdr->pos_str = w_str;
 	hdr->extra_len = extra_len;
+	hdr->pos_cache_line = w_cache_line;
 	hdr->primitive = primitive;
 
 	// move writer
-	haclog_atomic_int next_w = 0;
-	if (extra_len > 0) {
-		next_w = w_str + extra_len;
-	} else {
-		next_w = w_const_args + primitive->param_size;
-	}
-	haclog_bytes_buffer_w_move(bytes_buf, next_w);
+	haclog_bytes_buffer_w_move(bytes_buf, w);
 }
 
 #define HACLOG_MAX_FMT_ITEM 128
@@ -1383,12 +1388,7 @@ int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
 		memcpy(&meta->ts, &hdr->ts, sizeof(meta->ts));
 	}
 
-	haclog_atomic_int next_r = 0;
-	if (hdr->extra_len > 0) {
-		next_r = hdr->pos_str + hdr->extra_len;
-	} else {
-		next_r = hdr->pos_const + primitive->param_size;
-	}
+	haclog_atomic_int next_r = hdr->pos_cache_line + HACLOG_CACHE_INTERVAL;
 	haclog_bytes_buffer_r_move(bytes_buf, next_r);
 
 	return total_bytes;
