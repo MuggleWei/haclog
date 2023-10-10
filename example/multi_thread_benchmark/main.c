@@ -115,6 +115,7 @@ int main()
 	NUM_THREAD = haclog_thread_hardware_concurrency();
 	MSG_CNT = TOTAL_PER_ROUND / NUM_THREAD;
 
+	fprintf(stdout, "TOTAL_PER_ROUND: %d\n", MSG_CNT * NUM_THREAD);
 	fprintf(stdout, "MSG_CNT: %d\n", MSG_CNT);
 	fprintf(stdout, "NUM_THREAD: %d\n", NUM_THREAD);
 	fprintf(stdout, "ROUND: %d\n", ROUND);

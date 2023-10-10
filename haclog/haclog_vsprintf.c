@@ -1,4 +1,5 @@
 #include "haclog_vsprintf.h"
+#include "haclog/haclog_thread.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -928,6 +929,23 @@ typedef struct haclog_str_cache {
 	type v = va_arg(args, type);         \
 	HACLOG_SERIALIZE(p, v);
 
+#define HACLOG_FETCH_W(bytes_buf, r, w, num_bytes, ret)                     \
+	fetch_loop_cnt = 0;                                                     \
+	do {                                                                    \
+		ret = haclog_bytes_buffer_w_fc(bytes_buf, num_bytes, r, w);         \
+		if (ret >= 0) {                                                     \
+			break;                                                          \
+		}                                                                   \
+		if (ret == -1) {                                                    \
+			haclog_debug_break();                                           \
+			return;                                                         \
+		}                                                                   \
+		if (fetch_loop_cnt++) {                                             \
+			haclog_thread_yield();                                          \
+		}                                                                   \
+		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed); \
+	} while (1);
+
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
 									   const char *fmt_str, ...)
@@ -939,45 +957,20 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 
 	const haclog_atomic_int hdr_size =
 		(haclog_atomic_int)sizeof(haclog_serialize_hdr_t);
-	haclog_atomic_int r =
-		haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
+	static haclog_thread_local haclog_atomic_int r = 0;
+	// haclog_atomic_int r =
+	//     haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
 	haclog_atomic_int w = bytes_buf->w;
 	haclog_atomic_int w_hdr = 0;
 	haclog_atomic_int w_const_args = 0;
 	haclog_atomic_int w_str = 0;
 	char *p = NULL;
+	unsigned int fetch_loop_cnt = 0;
 
-	do {
-		w_hdr = haclog_bytes_buffer_w_fc(bytes_buf, hdr_size, r, w);
-		if (w_hdr >= 0) {
-			break;
-		}
-
-		if (w_hdr == -1) {
-			haclog_debug_break();
-			return;
-		}
-
-		haclog_thread_yield();
-		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
-	} while (1);
+	HACLOG_FETCH_W(bytes_buf, r, w, hdr_size, w_hdr);
 	w = w_hdr + hdr_size;
 
-	do {
-		w_const_args =
-			haclog_bytes_buffer_w_fc(bytes_buf, primitive->param_size, r, w);
-		if (w_const_args >= 0) {
-			break;
-		}
-
-		if (w_const_args == -1) {
-			haclog_debug_break();
-			return;
-		}
-
-		haclog_thread_yield();
-		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
-	} while (1);
+	HACLOG_FETCH_W(bytes_buf, r, w, primitive->param_size, w_const_args);
 	w = w_const_args + primitive->param_size;
 
 	p = haclog_bytes_buffer_get(bytes_buf, w_const_args);
@@ -1104,20 +1097,7 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	va_end(args);
 
 	// serialize string arguments
-	do {
-		w_str = haclog_bytes_buffer_w_fc(bytes_buf, extra_len, r, w);
-		if (w_str >= 0) {
-			break;
-		}
-
-		if (w_str == -1) {
-			haclog_debug_break();
-			return;
-		}
-
-		haclog_thread_yield();
-		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
-	} while (1);
+	HACLOG_FETCH_W(bytes_buf, r, w, extra_len, w_str);
 	p = haclog_bytes_buffer_get(bytes_buf, w_str);
 
 	for (unsigned int i = 0; i < n_str_idx; ++i) {

@@ -50,7 +50,7 @@ static void haclog_handle_remove_thread_ctx(haclog_context_t *ctx)
 }
 
 static void haclog_consume(haclog_context_t *ctx,
-						   haclog_thread_context_t *th_ctx, char *msg,
+						   haclog_thread_context_t *th_ctx, char *buf,
 						   unsigned long bufsize)
 {
 	haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;
@@ -61,7 +61,7 @@ static void haclog_consume(haclog_context_t *ctx,
 	int n = 0;
 
 	while (1) {
-		n = haclog_printf_primitive_format(bytes_buf, &meta, w, msg, bufsize);
+		n = haclog_printf_primitive_format(bytes_buf, &meta, w, buf, bufsize);
 		if (n < 0) {
 			break;
 		}
@@ -74,7 +74,7 @@ static void haclog_consume(haclog_context_t *ctx,
 				continue;
 			}
 
-			haclog_handler_write(handler, &meta, msg, n);
+			haclog_handler_write(handler, &meta, buf, n);
 		}
 	}
 }
@@ -90,8 +90,8 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 		bufsize = 2048;
 	}
 
-	char *msg = (char *)malloc(bufsize);
-	if (msg == NULL) {
+	char *buf = (char *)malloc(bufsize);
+	if (buf == NULL) {
 		haclog_debug_break();
 		return NULL;
 	}
@@ -101,16 +101,16 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 
 		haclog_thread_context_list_t *node = ctx->th_ctx_head.next;
 		while (node) {
-			haclog_consume(ctx, node->th_ctx, msg, bufsize);
+			haclog_consume(ctx, node->th_ctx, buf, bufsize);
 			node = node->next;
 		}
 
 		haclog_handle_remove_thread_ctx(ctx);
 
-		haclog_thread_yield();
+		// haclog_thread_yield();
 	}
 
-	free(msg);
+	free(buf);
 
 	return 0;
 }
