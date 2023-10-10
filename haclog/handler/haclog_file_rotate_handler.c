@@ -12,21 +12,35 @@ haclog_file_rotate_handler_rotate(haclog_file_rotate_handler_t *handler)
 		handler->fp = NULL;
 	}
 
+	int ret = 0;
 	char buf[HACLOG_MAX_PATH];
-	snprintf(buf, sizeof(buf) - 1, "%s.%d", handler->filepath,
-			 handler->backup_count);
+	ret = snprintf(buf, sizeof(buf) - 1, "%s.%d",
+					   (const char *)handler->filepath, handler->backup_count);
+	if (ret < 0) {
+		return -1;
+	}
+
 	if (haclog_path_exists(buf)) {
 		haclog_os_remove(buf);
 	}
 
 	char src[HACLOG_MAX_PATH], dst[HACLOG_MAX_PATH];
 	for (int i = (int)handler->backup_count - 1; i > 0; i--) {
-		snprintf(src, sizeof(src), "%s.%d", handler->filepath, i);
-		snprintf(dst, sizeof(dst), "%s.%d", handler->filepath, i + 1);
+		ret = snprintf(src, sizeof(src), "%s.%d", handler->filepath, i);
+		if (ret < 0) {
+			return -1;
+		}
+		ret = snprintf(dst, sizeof(dst), "%s.%d", handler->filepath, i + 1);
+		if (ret < 0) {
+			return -1;
+		}
 		haclog_os_rename(src, dst);
 	}
 
-	snprintf(dst, sizeof(dst), "%s.1", handler->filepath);
+	ret = snprintf(dst, sizeof(dst), "%s.1", handler->filepath);
+	if (ret < 0) {
+		return -1;
+	}
 	haclog_os_rename(handler->filepath, dst);
 
 	handler->fp = fopen(handler->filepath, "ab+");

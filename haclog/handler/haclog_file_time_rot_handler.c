@@ -85,32 +85,37 @@ haclog_file_time_rot_handler_rotate(haclog_file_time_rot_handler_t *handler)
 		handler->fp = NULL;
 	}
 
+	int ret = 0;
 	char buf[HACLOG_MAX_PATH];
 	switch (handler->rotate_unit) {
 	case HACLOG_TIME_ROTATE_UNIT_SEC: {
-		snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d%02d",
-				 handler->filepath, handler->last_tm.tm_year + 1900,
-				 handler->last_tm.tm_mon + 1, handler->last_tm.tm_mday,
-				 handler->last_tm.tm_hour, handler->last_tm.tm_min,
-				 handler->last_tm.tm_sec);
+		ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d%02d",
+					   handler->filepath, handler->last_tm.tm_year + 1900,
+					   handler->last_tm.tm_mon + 1, handler->last_tm.tm_mday,
+					   handler->last_tm.tm_hour, handler->last_tm.tm_min,
+					   handler->last_tm.tm_sec);
 
 	} break;
 	case HACLOG_TIME_ROTATE_UNIT_MIN: {
-		snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d", handler->filepath,
-				 handler->last_tm.tm_year + 1900, handler->last_tm.tm_mon + 1,
-				 handler->last_tm.tm_mday, handler->last_tm.tm_hour,
-				 handler->last_tm.tm_min);
+		ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d%02d",
+					   handler->filepath, handler->last_tm.tm_year + 1900,
+					   handler->last_tm.tm_mon + 1, handler->last_tm.tm_mday,
+					   handler->last_tm.tm_hour, handler->last_tm.tm_min);
 	} break;
 	case HACLOG_TIME_ROTATE_UNIT_HOUR: {
-		snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d", handler->filepath,
-				 handler->last_tm.tm_year + 1900, handler->last_tm.tm_mon + 1,
-				 handler->last_tm.tm_mday, handler->last_tm.tm_hour);
+		ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02dT%02d",
+					   handler->filepath, handler->last_tm.tm_year + 1900,
+					   handler->last_tm.tm_mon + 1, handler->last_tm.tm_mday,
+					   handler->last_tm.tm_hour);
 	} break;
 	case HACLOG_TIME_ROTATE_UNIT_DAY: {
-		snprintf(buf, sizeof(buf), "%s.%d%02d%02d", handler->filepath,
-				 handler->last_tm.tm_year + 1900, handler->last_tm.tm_mon + 1,
-				 handler->last_tm.tm_mday);
+		ret = snprintf(buf, sizeof(buf), "%s.%d%02d%02d", handler->filepath,
+					   handler->last_tm.tm_year + 1900,
+					   handler->last_tm.tm_mon + 1, handler->last_tm.tm_mday);
 	} break;
+	}
+	if (ret < 0) {
+		return HACLOG_ERR_ARGUMENTS;
 	}
 
 	handler->fp = fopen(buf, "ab+");
