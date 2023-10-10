@@ -26,9 +26,12 @@ haclog_thread_ret_t set_thread_id(void *args)
 	return 0;
 }
 
+enum {
+	num_thread = 4
+};
+
 void test_thread_id()
 {
-	const int num_thread = 4;
 	haclog_thread_id thread_ids[num_thread + 1];
 	haclog_thread_t threads[num_thread];
 
@@ -72,7 +75,6 @@ haclog_thread_ret_t fetch_add(void *args)
 
 void test_thread_detach()
 {
-	const int num_thread = 4;
 	haclog_thread_t threads[num_thread];
 
 	haclog_atomic_int v = 0;

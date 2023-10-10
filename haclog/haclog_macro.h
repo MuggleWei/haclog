@@ -63,11 +63,18 @@
 	// Unknown compiler
 #endif
 
+// constexpr
+#ifdef __cplusplus
+	#define haclog_constexpr constexpr
+#else
+	#define haclog_constexpr
+#endif
+
 // unused
 #define HACLOG_UNUSED(x) (void)x
 
 // round to a number that number=2^x and number!=0
 #define HACLOG_ROUND_TO_2POWX(value, roundto) \
-	(((value) + ((roundto)- 1)) & ~((roundto) - 1))
+	(((value) + ((roundto)-1)) & ~((roundto)-1))
 
 #endif // !HACLOG_MACRO_H_

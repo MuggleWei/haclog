@@ -13,6 +13,7 @@
 
 #include "haclog/haclog_macro.h"
 #include "haclog/haclog_bytes_buffer.h"
+#include <time.h>
 
 HACLOG_EXTERN_C_BEGIN
 
@@ -87,11 +88,22 @@ typedef unsigned long long haclog_serialize_placeholder;
  * @brief haclog serialize head
  */
 typedef struct haclog_serialize_hdr {
+	struct timespec ts; //!< timestamp
 	haclog_atomic_int pos_const; //!< const arguments position
 	haclog_atomic_int pos_str; //!< string arguments position
 	unsigned long extra_len; //!< extra length
+	unsigned long pos_end; //!< end position
 	haclog_printf_primitive_t *primitive; //!< primitive pointer
 } haclog_serialize_hdr_t;
+
+/**
+ * @brief log message
+ */
+typedef struct haclog_meta_info {
+	haclog_printf_loc_t *loc;
+	haclog_thread_id tid;
+	struct timespec ts;
+} haclog_meta_info_t;
 
 /**
  * @brief generate printf primitive
@@ -151,6 +163,13 @@ int haclog_printf_spec_param_size(haclog_printf_spec_t *spec);
 HACLOG_EXPORT
 void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive);
 
+// format attribute
+#if __GNUC__
+	#define HACLOG_PRINT_FORMAT_CHECK __attribute__((format(printf, 3, 4)));
+#else
+	#define HACLOG_PRINT_FORMAT_CHECK
+#endif
+
 /**
  * @brief serialize primitive and arguments into bytes buffer
  *
@@ -161,7 +180,28 @@ void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive);
 HACLOG_EXPORT
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
-									   ...);
+									   const char *fmt_str,
+									   ...) HACLOG_PRINT_FORMAT_CHECK;
+
+/**
+ * @brief format primitive to string (include '\0')
+ *
+ * @param bytes_buf  bytes buffer pointer
+ * @param meta       log meta info pointer
+ * @param w          writer position
+ * @param buf        buffer store the result
+ * @param bufsize    size of buffer
+ *
+ * @return 
+ *   - on success, return the number of characters printed (exclude '\0')
+ *   - on nothing format, return -2
+ *   - on failed, return -1 and set haclog last error
+ */
+HACLOG_EXPORT
+int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
+								   haclog_meta_info_t *meta,
+								   haclog_atomic_int w, char *buf,
+								   size_t bufsize);
 
 HACLOG_EXTERN_C_END
 

@@ -48,17 +48,18 @@ void haclog_bytes_buffer_free(haclog_bytes_buffer_t *bytes_buf);
  *
  * @param bytes_buf  bytes buffer pointer
  * @param num_bytes  number of required bytes
- * @param p_r        reader position pointer
+ * @param r          reader position pointer
  * @param w          writer position
  *
  * @return
  *   - on success, return write position
  *   - on failed, return -1 and set haclog last error
+ *   - on need wait reader move, return -2
  */
 HACLOG_EXPORT
 haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 										   haclog_atomic_int num_bytes,
-										   haclog_atomic_int *p_r,
+										   haclog_atomic_int r,
 										   haclog_atomic_int w);
 
 /**
@@ -73,7 +74,21 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
  */
 HACLOG_EXPORT
 int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
-								haclog_atomic_int pos);
+							   haclog_atomic_int pos);
+
+/**
+ * @brief move reader to specify position
+ *
+ * @param bytes_buf  bytes buffer pointer
+ * @param pos        expect position
+ *
+ * @return 
+ *   - on success, return 0
+ *   - on failed, return -1 and set haclog last error
+ */
+HACLOG_EXPORT
+int haclog_bytes_buffer_r_move(haclog_bytes_buffer_t *bytes_buf,
+							   haclog_atomic_int pos);
 
 /**
  * @brief get address pointer
@@ -88,6 +103,14 @@ int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
 HACLOG_EXPORT
 char *haclog_bytes_buffer_get(haclog_bytes_buffer_t *bytes_buf,
 							  haclog_atomic_int pos);
+
+/**
+ * @brief wait all cache has been handle
+ *
+ * @param bytes_buf  bytes buffer pointer
+ */
+HACLOG_EXPORT
+void haclog_bytes_buffer_join(haclog_bytes_buffer_t *bytes_buf);
 
 HACLOG_EXTERN_C_END
 

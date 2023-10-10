@@ -322,7 +322,12 @@ function(add_example name folder)
 		${haclog_src_dir}
 		${haclog_gen_dir})
 	target_link_libraries(${name} ${haclog})
-	target_compile_options(${name} PUBLIC -save-temps=obj)
+
+	# save temp object file, such as: asm code
+	if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
+		(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+		target_compile_options(${name} PUBLIC -save-temps=obj)
+	endif()
 endfunction()
 
 if (HACLOG_BUILD_EXAMPLE)
@@ -331,6 +336,14 @@ if (HACLOG_BUILD_EXAMPLE)
 	FOREACH(subdir ${subdirs})
 		IF(IS_DIRECTORY ${example_root_dir}/${subdir})
 			add_example(${subdir} ${example_root_dir}/${subdir})
+		ENDIF()
+	ENDFOREACH()
+
+	set(dev_example_root_dir ${CMAKE_CURRENT_LIST_DIR}/dev_test)
+	FILE(GLOB subdirs RELATIVE ${dev_example_root_dir} ${dev_example_root_dir}/*)
+	FOREACH(subdir ${subdirs})
+		IF(IS_DIRECTORY ${dev_example_root_dir}/${subdir})
+			add_example(${subdir} ${dev_example_root_dir}/${subdir})
 		ENDIF()
 	ENDFOREACH()
 endif()

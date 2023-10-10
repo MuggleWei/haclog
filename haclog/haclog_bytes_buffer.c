@@ -1,7 +1,9 @@
 #include "haclog_bytes_buffer.h"
-#include "haclog/haclog_thread.h"
 #include <stdlib.h>
 #include <string.h>
+#include "haclog/haclog_sleep.h"
+#include "haclog/haclog_stacktrace.h"
+#include "haclog/haclog_thread.h"
 #include "haclog/haclog_err.h"
 
 #define HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL ((int)sizeof(void *))
@@ -50,7 +52,7 @@ void haclog_bytes_buffer_free(haclog_bytes_buffer_t *bytes_buf)
 
 haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 										   haclog_atomic_int num_bytes,
-										   haclog_atomic_int *p_r,
+										   haclog_atomic_int r,
 										   haclog_atomic_int w)
 {
 	if (num_bytes >
@@ -60,7 +62,7 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 		return -1;
 	}
 
-	if (w >= *p_r) {
+	if (w >= r) {
 		/*
 		           r      w
 		 |---------|------|----|
@@ -68,17 +70,17 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 		// contiguous writable
 		haclog_atomic_int cw = bytes_buf->capacity - w;
 		if (cw < num_bytes) {
-			while (*p_r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL < num_bytes) {
-				haclog_thread_yield();
-				*p_r = haclog_atomic_load(&bytes_buf->r,
-										  haclog_memory_order_relaxed);
+			if (r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL < num_bytes) {
+				// need wait reader move
+				return -2;
+			} else {
+				/*
+				 w         r
+				 |---------|-----------|
+				 */
+				return 0;
 			}
 
-			/*
-			 w         r
-			 |---------|-----------|
-			 */
-			return 0;
 		} else {
 			return w;
 		}
@@ -88,46 +90,9 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 		 |-----|---------|-----|
 		 */
 		// contiguous writable
-		haclog_atomic_int cw = *p_r - w - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL;
+		haclog_atomic_int cw = r - w - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL;
 		if (cw < num_bytes) {
-			haclog_atomic_int w_to_end = bytes_buf->capacity - w;
-			if (w_to_end < num_bytes) {
-				while (*p_r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL < num_bytes) {
-					haclog_thread_yield();
-					*p_r = haclog_atomic_load(&bytes_buf->r,
-											  haclog_memory_order_relaxed);
-				}
-
-				/*
-				 w         r
-				 |---------|-----------|
-				 */
-				return 0;
-			} else {
-				while (1) {
-					haclog_thread_yield();
-					*p_r = haclog_atomic_load(&bytes_buf->r,
-											  haclog_memory_order_relaxed);
-
-					if (*p_r < w) {
-						/*
-						   r   w
-						 |-|---|---------------|
-						 */
-						return w;
-					} else {
-						if (*p_r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL <
-							num_bytes) {
-							continue;
-						}
-						/*
-						       w             r
-						 |-----|-------------|-|
-						 */
-						return w;
-					}
-				}
-			}
+			return -2;
 		} else {
 			return w;
 		}
@@ -135,7 +100,7 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 }
 
 int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
-								haclog_atomic_int pos)
+							   haclog_atomic_int pos)
 {
 	if (pos < 0 || pos >= bytes_buf->capacity) {
 		haclog_set_error(HACLOG_ERR_ARGUMENTS);
@@ -143,7 +108,18 @@ int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
 	}
 
 	haclog_atomic_store(&bytes_buf->w, pos, haclog_memory_order_release);
+	return 0;
+}
 
+int haclog_bytes_buffer_r_move(haclog_bytes_buffer_t *bytes_buf,
+							   haclog_atomic_int pos)
+{
+	if (pos < 0 || pos >= bytes_buf->capacity) {
+		haclog_set_error(HACLOG_ERR_ARGUMENTS);
+		return -1;
+	}
+
+	haclog_atomic_store(&bytes_buf->r, pos, haclog_memory_order_relaxed);
 	return 0;
 }
 
@@ -156,4 +132,16 @@ char *haclog_bytes_buffer_get(haclog_bytes_buffer_t *bytes_buf,
 	}
 
 	return bytes_buf->buffer + pos;
+}
+
+void haclog_bytes_buffer_join(haclog_bytes_buffer_t *bytes_buf)
+{
+	do {
+		haclog_atomic_int r =
+			haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed);
+		if (r == bytes_buf->w) {
+			break;
+		}
+		haclog_nsleep(1 * 1000 * 1000);
+	} while (1);
 }
