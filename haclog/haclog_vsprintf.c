@@ -1129,7 +1129,7 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 	hdr->pos_const = w_const_args;
 	hdr->pos_str = w_str;
 	hdr->extra_len = extra_len;
-	hdr->pos_cache_line = w_cache_line;
+	hdr->pos_end = w;
 	hdr->primitive = primitive;
 
 	// move writer
@@ -1388,8 +1388,7 @@ int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
 		memcpy(&meta->ts, &hdr->ts, sizeof(meta->ts));
 	}
 
-	haclog_atomic_int next_r = hdr->pos_cache_line + HACLOG_CACHE_INTERVAL;
-	haclog_bytes_buffer_r_move(bytes_buf, next_r);
+	haclog_bytes_buffer_r_move(bytes_buf, hdr->pos_end);
 
 	return total_bytes;
 }

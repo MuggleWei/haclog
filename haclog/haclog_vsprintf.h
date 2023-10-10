@@ -92,7 +92,7 @@ typedef struct haclog_serialize_hdr {
 	haclog_atomic_int pos_const; //!< const arguments position
 	haclog_atomic_int pos_str; //!< string arguments position
 	unsigned long extra_len; //!< extra length
-	unsigned long pos_cache_line; //!< cache line position
+	unsigned long pos_end; //!< end position
 	haclog_printf_primitive_t *primitive; //!< primitive pointer
 } haclog_serialize_hdr_t;
 
