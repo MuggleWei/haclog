@@ -4,9 +4,14 @@
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 
-#define TOTAL_PER_ROUND 80000
-static int MSG_CNT = 0;
-static int NUM_THREAD = 0;
+// #define TOTAL_PER_ROUND 80000
+// static int MSG_CNT = 0;
+// static int NUM_THREAD = 0;
+
+#define TOTAL_PER_ROUND 0
+static int MSG_CNT = 5000;
+static int NUM_THREAD = 16;
+
 #define ROUND 16
 #define ROUND_INTERVAL (100 * 1000 * 1000)
 
@@ -24,6 +29,8 @@ typedef struct thread_args {
 	double *avg_elapsed_arr;
 } thread_args_t;
 
+static haclog_spinlock_t spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK;
+
 void run_round(log_msg_t *arr, int arrlen, double *avg_elapsed)
 {
 	struct timespec ts1, ts2;
@@ -40,6 +47,10 @@ void run_round(log_msg_t *arr, int arrlen, double *avg_elapsed)
 	unsigned long elapsed =
 		(ts2.tv_sec - ts1.tv_sec) * 1000000000 + ts2.tv_nsec - ts1.tv_nsec;
 	*avg_elapsed = (double)elapsed / arrlen;
+
+	haclog_spinlock_lock(&spinlock);
+	fprintf(stdout, "round use: %lu us\n", elapsed / 1000);
+	haclog_spinlock_unlock(&spinlock);
 }
 
 haclog_thread_ret_t run(void *args)
@@ -112,8 +123,10 @@ int main()
 	haclog_backend_run();
 
 	// prepare datas
+#if TOTAL_PER_ROUND
 	NUM_THREAD = haclog_thread_hardware_concurrency();
 	MSG_CNT = TOTAL_PER_ROUND / NUM_THREAD;
+#endif
 
 	fprintf(stdout, "TOTAL_PER_ROUND: %d\n", MSG_CNT * NUM_THREAD);
 	fprintf(stdout, "MSG_CNT: %d\n", MSG_CNT);
