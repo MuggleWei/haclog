@@ -8,7 +8,7 @@
 * [readme EN](./README.md)
 * [readme 中文](./README_cn.md)
 
-haclog(**H**appy **A**sync **C** Log) is a plain C asynchronous log library. The main goal of this library is make log frontend(log producer thread) write fast as much as possible.  
+haclog(**H**appy **A**sync **C** Log) is a plain C asynchronous log library. The main goal of this library is to make the writing time of **log front-end(log producer thread)** as small as possible.  
 
 <img src="./doc/img/haclog.svg" />
 
