@@ -142,6 +142,6 @@ void haclog_bytes_buffer_join(haclog_bytes_buffer_t *bytes_buf)
 		if (r == bytes_buf->w) {
 			break;
 		}
-		haclog_nsleep(1000 * 1000);
+		haclog_nsleep(1 * 1000 * 1000);
 	} while (1);
 }

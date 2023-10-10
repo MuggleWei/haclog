@@ -25,6 +25,7 @@ typedef struct haclog_thread_context_list {
 
 typedef struct haclog_context {
 	haclog_spinlock_t spinlock; //!< context spinlock
+	haclog_thread_context_list_t th_ctx_add_list; //!< add list 
 	haclog_thread_context_list_t th_ctx_head; //!< thread context list head
 	unsigned int n_handler; //!< number of handler
 	int level; //!< min level of handler

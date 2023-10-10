@@ -17,9 +17,16 @@
 
 HACLOG_EXTERN_C_BEGIN
 
+enum {
+	HACLOG_THREAD_CONTEXT_STATUS_NORMAL = 0,
+	HACLOG_THREAD_CONTEXT_STATUS_WAIT_REMOVE,
+	HACLOG_THREAD_CONTEXT_STATUS_DONE,
+};
+
 typedef struct haclog_thread_context {
 	haclog_bytes_buffer_t *bytes_buf;
 	haclog_thread_id tid;
+	haclog_atomic_int status;
 } haclog_thread_context_t;
 
 /**

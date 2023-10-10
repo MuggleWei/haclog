@@ -30,14 +30,15 @@ haclog_thread_context_t *haclog_thread_context_init()
 		return NULL;
 	}
 
+	s_haclog_thread_ctx->tid = haclog_thread_readable_id();
+	s_haclog_thread_ctx->status = HACLOG_THREAD_CONTEXT_STATUS_NORMAL;
+
 	int ret = haclog_context_insert_thread_context(s_haclog_thread_ctx);
 	if (ret != 0) {
 		haclog_thread_context_cleanup();
 		haclog_set_error(ret);
 		return NULL;
 	}
-
-	s_haclog_thread_ctx->tid = haclog_thread_readable_id();
 
 	return s_haclog_thread_ctx;
 }
