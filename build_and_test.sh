@@ -16,4 +16,6 @@ cmake \
 	-DHACLOG_BUILD_GBENCHMARK=ON \
 	-DCMAKE_INSTALL_PREFIX=$dist_dir
 cmake --build $build_dir
+
+cd $build_dir
 cmake --build $build_dir --target test
