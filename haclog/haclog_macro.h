@@ -77,4 +77,8 @@
 #define HACLOG_ROUND_TO_2POWX(value, roundto) \
 	(((value) + ((roundto)-1)) & ~((roundto)-1))
 
+// cache line
+#define HACLOG_CACHE_LINE 64
+#define HACLOG_CACHE_INTERVAL (2 * HACLOG_CACHE_LINE)
+
 #endif // !HACLOG_MACRO_H_

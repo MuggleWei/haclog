@@ -186,6 +186,16 @@ HACLOG_EXPORT
 int haclog_handler_default_write_meta(haclog_handler_t *handler,
 									  haclog_meta_info_t *meta);
 
+/**
+ * @brief customize log meta pattern
+ *
+ * @param handler  handler pointer
+ * @param fn       write meta function
+ */
+HACLOG_EXPORT
+void haclog_handler_set_fn_write_meta(haclog_handler_t *handler,
+									  func_haclog_handler_write_meta fn);
+
 HACLOG_EXTERN_C_END
 
 #endif // !HACLOG_HANDLER_H_

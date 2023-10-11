@@ -22,6 +22,8 @@ cd build
 cmake ..
 ```
 
+若除编译日志库本身, 还想运行单元测试和基准测试, 可直接运行 `run_test_and_benchmark.sh` (Windows 下运行 `run_test_and_benchmark.bat`)
+
 ## 使用示例
 ### hello
 ```
@@ -129,4 +131,34 @@ void add_file_time_rot_handler()
 	haclog_handler_set_level((haclog_handler_t *)&handler, HACLOG_LEVEL_DEBUG);
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
+```
+
+### 自定义日志格式
+默认情况下, 会打印详细的日志信息, 格式如下:  
+`${日志等级}|${UTC+0的日期时间}|${日志所在文件和行号}|${日志所在的函数}|${线程号}`  
+
+用户也可以自定义 `handler` 的日志信息格式化函数
+```
+int my_write_meta(struct haclog_handler *handler, haclog_meta_info_t *meta)
+{
+	const char *level = haclog_level_to_str(meta->loc->level);
+	return handler->writev(handler, "%s|%llu.%lu ", level,
+						   (unsigned long long)meta->ts.tv_sec,
+						   (unsigned long)meta->ts.tv_nsec);
+}
+
+...
+
+haclog_handler_set_fn_write_meta((haclog_handler_t *)&handler, my_write_meta);
+haclog_context_add_handler((haclog_handler_t *)&handler);
+```
+
+### 设置线程 Bytes Buffer 大小
+```
+haclog_context_set_bytes_buf_size(2 * 1024 * 1024);
+```
+
+### 设置日志一行的最大长度
+```
+haclog_context_set_msg_buf_size(2048);
 ```

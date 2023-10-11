@@ -6,7 +6,7 @@
 #include "haclog/haclog_thread.h"
 #include "haclog/haclog_err.h"
 
-#define HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL ((int)sizeof(void *))
+#define HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL HACLOG_CACHE_INTERVAL
 
 haclog_bytes_buffer_t *haclog_bytes_buffer_new(int capacity)
 {

@@ -946,9 +946,6 @@ typedef struct haclog_str_cache {
 		r = haclog_atomic_load(&bytes_buf->r, haclog_memory_order_relaxed); \
 	} while (1);
 
-#define HACLOG_CACHE_LINE 64
-#define HACLOG_CACHE_INTERVAL (2 * HACLOG_CACHE_LINE)
-
 void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
 									   const char *fmt_str, ...)

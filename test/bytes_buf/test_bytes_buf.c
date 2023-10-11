@@ -12,7 +12,7 @@ void tearDown()
 void test_bytes_buf_case1()
 {
 	haclog_bytes_buffer_t *bytes_buf = haclog_bytes_buffer_new(1024 * 1024 * 8);
-	bytes_buf->w = 3194368;
+	bytes_buf->w = 3194248;
 	bytes_buf->r = 3194480;
 
 	const haclog_atomic_int hdr_size =
