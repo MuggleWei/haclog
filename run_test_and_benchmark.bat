@@ -20,4 +20,13 @@ cmake ^
 cmake --build %build_dir% --config Release
 
 cd %build_dir%
+
+echo "--------------------------------"
+echo "         Run Unit Test          "
+echo "--------------------------------"
 cmake --build %build_dir% --config Release --target RUN_TESTS
+
+echo "--------------------------------"
+echo "         Run GBenchmark         "
+echo "--------------------------------"
+bin\Release\gbenchmark_haclog.exe

@@ -22,13 +22,7 @@ cd build
 cmake ..
 ```
 
-若除编译日志库外, 还想要编译单元测试和基准测试, 可通过设置参数实现
-```
-cmake .. \
-	-DBUILD_TESTING=ON \
-	-DHACLOG_BUILD_BENCHMARK=ON \
-	-DHACLOG_BUILD_GBENCHMARK=ON
-```
+若除编译日志库本身, 还想运行单元测试和基准测试, 可直接运行 `run_test_and_benchmark.sh` (Windows 下运行 `run_test_and_benchmark.bat`)
 
 ## 使用示例
 ### hello

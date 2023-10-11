@@ -20,13 +20,7 @@ cd build
 cmake ..
 ```
 
-You can also compile unit tests and benchmark by set CMake options
-```
-cmake .. \
-	-DBUILD_TESTING=ON \
-	-DHACLOG_BUILD_BENCHMARK=ON \
-	-DHACLOG_BUILD_GBENCHMARK=ON
-```
+If you want to compile and run unit tests and benchmark, run `run_test_and_benchmark.sh` (in Windows, `run_test_and_benchmark.bat`)
 
 ## Usage samples
 ### hello
