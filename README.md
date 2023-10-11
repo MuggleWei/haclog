@@ -20,6 +20,14 @@ cd build
 cmake ..
 ```
 
+You can also compile unit tests and benchmark by set CMake options
+```
+cmake .. \
+	-DBUILD_TESTING=ON \
+	-DHACLOG_BUILD_BENCHMARK=ON \
+	-DHACLOG_BUILD_GBENCHMARK=ON
+```
+
 ## Usage samples
 ### hello
 ```
@@ -127,4 +135,34 @@ void add_file_time_rot_handler()
 	haclog_handler_set_level((haclog_handler_t *)&handler, HACLOG_LEVEL_DEBUG);
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
+```
+
+### Customize log format
+By default, detailed log information will be printed in the following pattern:  
+`${level}|${UTC+0 datetime}|${file & line number}|${function}|${thread id}`  
+
+User can Customize log meta format
+```
+int my_write_meta(struct haclog_handler *handler, haclog_meta_info_t *meta)
+{
+	const char *level = haclog_level_to_str(meta->loc->level);
+	return handler->writev(handler, "%s|%llu.%lu ", level,
+						   (unsigned long long)meta->ts.tv_sec,
+						   (unsigned long)meta->ts.tv_nsec);
+}
+
+...
+
+haclog_handler_set_fn_write_meta((haclog_handler_t *)&handler, my_write_meta);
+haclog_context_add_handler((haclog_handler_t *)&handler);
+```
+
+### Set Bytes Buffer size
+```
+haclog_context_set_bytes_buf_size(2 * 1024 * 1024);
+```
+
+### Set max length of one log line 
+```
+haclog_context_set_msg_buf_size(2048);
 ```
