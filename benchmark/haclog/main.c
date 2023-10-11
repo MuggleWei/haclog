@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 
 #define TOTAL_PER_ROUND 10000
@@ -38,9 +37,9 @@ void run_round(log_msg_t *arr, int arrlen, double *avg_elapsed)
 
 	for (int i = 0; i < arrlen; i++) {
 		log_msg_t *msg = arr + i;
-		LOG_INFO("u64: %llu, i64: %lld, u32: %lu, i32: %ld, s: %s",
-				 (unsigned long long)msg->u64, (long long)msg->i64,
-				 (unsigned long)msg->u32, (long)msg->i32, msg->s);
+		HACLOG_INFO("u64: %llu, i64: %lld, u32: %lu, i32: %ld, s: %s",
+					(unsigned long long)msg->u64, (long long)msg->i64,
+					(unsigned long)msg->u32, (long)msg->i32, msg->s);
 	}
 
 	timespec_get(&ts2, TIME_UTC);
@@ -77,7 +76,7 @@ void add_file_handler()
 {
 	static haclog_file_handler_t handler;
 	memset(&handler, 0, sizeof(handler));
-	if (haclog_file_handler_init(&handler, "logs/multi_thread_benchmark.log",
+	if (haclog_file_handler_init(&handler, "logs/benchmark_haclog.log",
 								 "w") != 0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);

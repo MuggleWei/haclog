@@ -19,6 +19,23 @@ elseif (${CMAKE_C_COMPILER_ID} STREQUAL MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1 -D_UNICODE -DUNICODE)
 	add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 	add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+	# see: https://learn.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-170
+	# The /Zc:__cplusplus compiler option enables updated __cplusplus macro
+	add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>")
+	add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/std:c++20>")
+endif()
+
+# Mac M1 clang compiler default c++ version set to c++97, it will lead 
+# gbenchmark_haclog compile error
+if (APPLE)
+	if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+		message("# detect APPLE arm, set c&cxx standard to 11")
+		set(CMAKE_C_STANDARD 11)
+		set(CMAKE_C_STANDARD_REQUIRED ON)
+		set(CMAKE_CXX_STANDARD 11)
+		set(CMAKE_CXX_STANDARD_REQUIRED ON)
+	endif()
 endif()
 
 message("-- c compiler support features: ")
@@ -49,7 +66,9 @@ option(BUILD_SHARED_LIBS "Build shared or static library" ON)
 option(BUILD_TESTING "Build testing" OFF)
 option(HACLOG_BUILD_EXAMPLE "Build haclog examples" OFF)
 option(HACLOG_BUILD_BENCHMARK "Build haclog benchmark" OFF)
+option(HACLOG_BUILD_GBENCHMARK "Build haclog google benchmark" OFF)
 option(HACLOG_DOWNLOAD_TEST_LIB "Download test lib if build testing is ON" ON)
+option(HACLOG_DOWNLOAD_GBENCHMARK_LIB "Download google benchmark lib if build gbenchmark is ON" ON)
 option(HACLOG_BUILD_SANITIZER "Compile haclog with sanitizer" OFF)
 option(HACLOG_BUILD_COVERAGE "Build haclog coverage" OFF)
 if (BUILD_SHARED_LIBS)
@@ -150,7 +169,9 @@ message("# haclog BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 message("# haclog BUILD_TESTING: ${BUILD_TESTING}")
 message("# haclog HACLOG_BUILD_EXAMPLE: ${HACLOG_BUILD_EXAMPLE}")
 message("# haclog HACLOG_BUILD_BENCHMARK: ${HACLOG_BUILD_BENCHMARK}")
+message("# haclog HACLOG_BUILD_GBENCHMARK: ${HACLOG_BUILD_GBENCHMARK}")
 message("# haclog HACLOG_DOWNLOAD_TEST_LIB: ${HACLOG_DOWNLOAD_TEST_LIB}")
+message("# haclog HACLOG_DOWNLOAD_GBENCHMARK_LIB: ${HACLOG_DOWNLOAD_GBENCHMARK_LIB}")
 message("# haclog HACLOG_BUILD_SANITIZER: ${HACLOG_BUILD_SANITIZER}")
 message("# haclog HACLOG_BUILD_COVERAGE: ${HACLOG_BUILD_COVERAGE}")
 message("# haclog HACLOG_LIB_TYPE: ${HACLOG_LIB_TYPE}")
@@ -372,15 +393,66 @@ if (HACLOG_BUILD_BENCHMARK)
 	ENDFOREACH()
 endif()
 
+
+################################
+# deps
+################################
+include(FetchContent)
+set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
+
+################################
+# gbenchmark
+################################
+
+function(add_gbenchmark name folder)
+	message("add gbenchmark ${name} ${folder}")
+	set(name gbenchmark_${name})
+
+	add_app(${name} ${folder})
+	target_link_libraries(${name} benchmark)
+	target_include_directories(${name} PRIVATE
+		${FETCHCONTENT_BASE_DIR}/benchmark-src)
+	if (HACLOG_DOWNLOAD_GBENCHMARK_LIB)
+		add_dependencies(${name} benchmark)
+	endif()
+endfunction()
+
+if (HACLOG_BUILD_GBENCHMARK)
+	if (HACLOG_DOWNLOAD_GBENCHMARK_LIB)
+		message("-- fetch google benchmark")
+		set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "")
+		set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "")
+		FetchContent_Declare(
+			benchmark
+			GIT_REPOSITORY https://github.com/google/benchmark.git
+			GIT_TAG v1.8.3
+			GIT_SHALLOW TRUE
+			GIT_PROGRESS TRUE
+			)
+		FetchContent_MakeAvailable(benchmark)
+	else()
+		find_package(benchmark)
+		if (NOT benchmark_FOUND)
+			message(FATAL_ERROR "Failed found google benchmark")
+		endif()
+		message("find google benchmark: ${benchmark_DIR}")
+	endif()
+
+	set(gbenchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/gbenchmark)
+	FILE(GLOB subdirs RELATIVE ${gbenchmark_root_dir} ${gbenchmark_root_dir}/*)
+	FOREACH(subdir ${subdirs})
+		IF(IS_DIRECTORY ${gbenchmark_root_dir}/${subdir})
+			add_gbenchmark(${subdir} ${gbenchmark_root_dir}/${subdir})
+		ENDIF()
+	ENDFOREACH()
+endif()
+
 ################################
 # tests
 ################################
 
 if (BUILD_TESTING)
 	if (HACLOG_DOWNLOAD_TEST_LIB)
-		include(FetchContent)
-		set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
-
 		message("-- fetch Unity Test")
 		FetchContent_Declare(
 			unity
