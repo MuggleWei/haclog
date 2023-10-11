@@ -50,8 +50,7 @@ public:
 		std::call_once(init_flag, []() {
 			static haclog_file_handler_t file_handler = {};
 			if (haclog_file_handler_init(
-					&file_handler, "logs/haclog_gbenchmark_const_iter.log",
-					"w") != 0) {
+					&file_handler, "logs/gbenchmark_haclog.log", "w") != 0) {
 				exit(EXIT_FAILURE);
 			}
 			haclog_handler_set_level((haclog_handler_t *)&file_handler,
@@ -97,6 +96,11 @@ BENCHMARK_REGISTER_F(ConstIterFixture, run)->Threads(2)->MinTime(MIN_TIME);
 BENCHMARK_REGISTER_F(ConstIterFixture, run)
 	->Threads((std::thread::hardware_concurrency() / 2) > 0 ?
 				  (std::thread::hardware_concurrency() / 2) :
+				  1)
+	->MinTime(MIN_TIME);
+BENCHMARK_REGISTER_F(ConstIterFixture, run)
+	->Threads(std::thread::hardware_concurrency() - 1 > 0 ?
+				  (std::thread::hardware_concurrency() - 1) :
 				  1)
 	->MinTime(MIN_TIME);
 
