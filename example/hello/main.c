@@ -3,6 +3,12 @@
 #define HACLOG_HOLD_LOG_MACRO 1
 #include "haclog/haclog.h"
 
+int my_write_meta(struct haclog_handler *handler, haclog_meta_info_t *meta)
+{
+	const char *level = haclog_level_to_str(meta->loc->level);
+	return handler->writev(handler, "%s| ", level);
+}
+
 void add_console_handler()
 {
 	static haclog_console_handler_t handler;
@@ -13,6 +19,8 @@ void add_console_handler()
 	}
 
 	haclog_handler_set_level((haclog_handler_t *)&handler, HACLOG_LEVEL_INFO);
+	haclog_handler_set_fn_write_meta((haclog_handler_t *)&handler,
+									 my_write_meta);
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
 

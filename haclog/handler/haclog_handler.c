@@ -79,3 +79,9 @@ int haclog_handler_default_write_meta(haclog_handler_t *handler,
 		filename, (unsigned int)meta->loc->line, meta->loc->func,
 		(unsigned long long)meta->tid);
 }
+
+void haclog_handler_set_fn_write_meta(haclog_handler_t *handler,
+									  func_haclog_handler_write_meta fn)
+{
+	handler->write_meta = fn;
+}
