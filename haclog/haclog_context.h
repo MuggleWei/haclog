@@ -31,7 +31,7 @@ typedef struct haclog_context {
 	int level; //!< min level of handler
 	haclog_handler_t *handlers[8]; //!< handler array
 	unsigned long bytes_buf_size; //!< bytes buffer size of thread context
-	unsigned long buf_size; //!< buffer size of log write
+	unsigned long msg_buf_size; //!< buffer size of log write
 } haclog_context_t;
 
 /**
@@ -91,12 +91,12 @@ HACLOG_EXPORT
 unsigned long haclog_context_get_bytes_buf_size();
 
 /**
- * @brief set context buffer size
+ * @brief set output message buffer size
  *
- * @param bufsize  buffer size
+ * @param bufsize  buffer size of output message
  */
 HACLOG_EXPORT
-void haclog_context_set_buf_size(unsigned long bufsize);
+void haclog_context_set_msg_buf_size(unsigned long bufsize);
 
 HACLOG_EXTERN_C_END
 

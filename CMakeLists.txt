@@ -48,6 +48,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING
 option(BUILD_SHARED_LIBS "Build shared or static library" ON)
 option(BUILD_TESTING "Build testing" OFF)
 option(HACLOG_BUILD_EXAMPLE "Build haclog examples" OFF)
+option(HACLOG_BUILD_BENCHMARK "Build haclog benchmark" OFF)
 option(HACLOG_DOWNLOAD_TEST_LIB "Download test lib if build testing is ON" ON)
 option(HACLOG_BUILD_SANITIZER "Compile haclog with sanitizer" OFF)
 option(HACLOG_BUILD_COVERAGE "Build haclog coverage" OFF)
@@ -148,6 +149,7 @@ message("# haclog CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message("# haclog BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 message("# haclog BUILD_TESTING: ${BUILD_TESTING}")
 message("# haclog HACLOG_BUILD_EXAMPLE: ${HACLOG_BUILD_EXAMPLE}")
+message("# haclog HACLOG_BUILD_BENCHMARK: ${HACLOG_BUILD_BENCHMARK}")
 message("# haclog HACLOG_DOWNLOAD_TEST_LIB: ${HACLOG_DOWNLOAD_TEST_LIB}")
 message("# haclog HACLOG_BUILD_SANITIZER: ${HACLOG_BUILD_SANITIZER}")
 message("# haclog HACLOG_BUILD_COVERAGE: ${HACLOG_BUILD_COVERAGE}")
@@ -286,11 +288,7 @@ install(FILES
 # examples
 ################################
 
-function(add_example name folder)
-	message("add example ${name} ${folder}")
-	
-	set(name example_${name})
-
+function(add_app name folder)
 	file(GLOB_RECURSE tmp_h ${folder}/*.h)
 	file(GLOB_RECURSE tmp_c ${folder}/*.c)
 	file(GLOB_RECURSE tmp_cpp ${folder}/*.cpp)
@@ -330,6 +328,12 @@ function(add_example name folder)
 	endif()
 endfunction()
 
+function(add_example name folder)
+	message("add example ${name} ${folder}")
+	set(name example_${name})
+	add_app(${name} ${folder})
+endfunction()
+
 if (HACLOG_BUILD_EXAMPLE)
 	set(example_root_dir ${CMAKE_CURRENT_LIST_DIR}/example)
 	FILE(GLOB subdirs RELATIVE ${example_root_dir} ${example_root_dir}/*)
@@ -344,6 +348,26 @@ if (HACLOG_BUILD_EXAMPLE)
 	FOREACH(subdir ${subdirs})
 		IF(IS_DIRECTORY ${dev_example_root_dir}/${subdir})
 			add_example(${subdir} ${dev_example_root_dir}/${subdir})
+		ENDIF()
+	ENDFOREACH()
+endif()
+
+################################
+# benchmark
+################################
+
+function(add_benchmark name folder)
+	message("add benchmark ${name} ${folder}")
+	set(name benchmark_${name})
+	add_app(${name} ${folder})
+endfunction()
+
+if (HACLOG_BUILD_BENCHMARK)
+	set(benchmark_root_dir ${CMAKE_CURRENT_LIST_DIR}/benchmark)
+	FILE(GLOB subdirs RELATIVE ${benchmark_root_dir} ${benchmark_root_dir}/*)
+	FOREACH(subdir ${subdirs})
+		IF(IS_DIRECTORY ${benchmark_root_dir}/${subdir})
+			add_benchmark(${subdir} ${benchmark_root_dir}/${subdir})
 		ENDIF()
 	ENDFOREACH()
 endif()
