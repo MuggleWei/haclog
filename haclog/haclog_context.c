@@ -4,6 +4,9 @@
 #include "haclog/haclog_thread.h"
 #include <stdlib.h>
 
+#define HACLOG_DEFAULT_BYTES_BUF_SIZE 1024 * 1024
+#define HACLOG_DEFAULT_MSG_BUF_SIZE 2048
+
 haclog_context_t *haclog_context_get()
 {
 	static haclog_context_t s_ctx = {
@@ -12,8 +15,8 @@ haclog_context_t *haclog_context_get()
 		.n_handler = 0,
 		.level = HACLOG_LEVEL_FATAL,
 		.handlers = { NULL },
-		.bytes_buf_size = 1024 * 1024 * 8,
-		.buf_size = 4096,
+		.bytes_buf_size = HACLOG_DEFAULT_BYTES_BUF_SIZE,
+		.msg_buf_size = HACLOG_DEFAULT_MSG_BUF_SIZE,
 	};
 	return &s_ctx;
 }
@@ -70,8 +73,8 @@ int haclog_context_add_handler(haclog_handler_t *handler)
 
 void haclog_context_set_bytes_buf_size(unsigned long bufsize)
 {
-	if (bufsize < 1024 * 8) {
-		bufsize = 1024 * 8;
+	if (bufsize < HACLOG_DEFAULT_BYTES_BUF_SIZE) {
+		bufsize = HACLOG_DEFAULT_BYTES_BUF_SIZE;
 	}
 
 	haclog_context_t *ctx = haclog_context_get();
@@ -84,11 +87,11 @@ unsigned long haclog_context_get_bytes_buf_size()
 	return ctx->bytes_buf_size;
 }
 
-void haclog_context_set_buf_size(unsigned long bufsize)
+void haclog_context_set_msg_buf_size(unsigned long bufsize)
 {
-	if (bufsize < 2048) {
-		bufsize = 2048;
+	if (bufsize < HACLOG_DEFAULT_MSG_BUF_SIZE) {
+		bufsize = HACLOG_DEFAULT_MSG_BUF_SIZE;
 	}
 	haclog_context_t *ctx = haclog_context_get();
-	ctx->buf_size = bufsize;
+	ctx->msg_buf_size = bufsize;
 }
