@@ -26,6 +26,18 @@ elseif (${CMAKE_C_COMPILER_ID} STREQUAL MSVC)
 	add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/std:c++20>")
 endif()
 
+# Mac M1 clang compiler default c++ version set to c++97, it will lead 
+# gbenchmark_haclog compile error
+if (APPLE)
+	if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+		message("# detect APPLE arm, set c&cxx standard to 11")
+		set(CMAKE_C_STANDARD 11)
+		set(CMAKE_C_STANDARD_REQUIRED ON)
+		set(CMAKE_CXX_STANDARD 11)
+		set(CMAKE_CXX_STANDARD_REQUIRED ON)
+	endif()
+endif()
+
 message("-- c compiler support features: ")
 foreach(feature ${CMAKE_C_COMPILE_FEATURES})
 	message("support feature: ${feature}")
