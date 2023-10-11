@@ -1,11 +1,11 @@
-name: MacOS Clang
+name: MacOS Intel Clang 
 
 on: [push, pull_request]
 
 jobs:
   build:
-    name: MacOS Clang
-    runs-on: macos-latest
+    name: MacOS Intel Clang
+    runs-on: macos-latest-large
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@latest
@@ -23,4 +23,3 @@ jobs:
         run: >
           cd build;
           make test;
-

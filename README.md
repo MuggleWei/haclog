@@ -3,7 +3,8 @@
 ![linux-gcc](https://github.com/MuggleWei/haclog/actions/workflows/linux-gcc.yaml/badge.svg?branch=master)
 ![linux-clang](https://github.com/MuggleWei/haclog/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
 ![win-msvc](https://github.com/MuggleWei/haclog/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
-![macos-clang](https://github.com/MuggleWei/haclog/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
+![macos-intel-clang](https://github.com/MuggleWei/haclog/actions/workflows/macos-intel-clang.yaml/badge.svg?branch=master)
+![macos-arm64-clang](https://github.com/MuggleWei/haclog/actions/workflows/macos-arm64-clang.yaml/badge.svg?branch=master)
 
 * [readme EN](./README.md)
 * [readme 中文](./README_cn.md)

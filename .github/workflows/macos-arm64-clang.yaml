@@ -1,0 +1,25 @@
+name: MacOS Arm64 Clang 
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: MacOS Arm64 Clang
+    runs-on: macos-latest-xlarge
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@latest
+      - name: build
+        run: |
+          mkdir build;
+          cd build;
+          cmake ..  \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON;
+          cmake --build . --config Release;
+      - name: tests
+        run: >
+          cd build;
+          make test;
