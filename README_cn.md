@@ -10,7 +10,7 @@
 
 ## 概述
 
-haclog(**H**appy **A**sync **C** Log) 是一个纯 C 的异步日志库, 该库的主要目标是使**日志前端(日志生产者线程)**的写入耗时尽可能的少  
+haclog(**H**appy **A**sync **C** Log) 是一个纯 C 的异步日志库, 该库的主要目标是使 **日志前端(日志生产者线程)** 的写入耗时尽可能的少  
 
 <img src="./doc/img/haclog.svg" />
 
@@ -109,7 +109,7 @@ void add_file_rotate_handler()
 {
 	static haclog_file_rotate_handler_t handler;
 	memset(&handler, 0, sizeof(handler));
-	if (haclog_file_rotate_handler_init(&handler, "logs/hello.rot.log", 16, 5) != 0) {
+	if (haclog_file_rotate_handler_init(&handler, "logs/hello.rot.log", 128 * 1024 * 1024, 5) != 0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);
 	}
