@@ -133,7 +133,7 @@ haclog_file_rotate_handler_destroy(struct haclog_handler *base_handler)
 
 int haclog_file_rotate_handler_init(haclog_file_rotate_handler_t *handler,
 									const char *filepath,
-									unsigned int max_bytes,
+									long max_bytes,
 									unsigned int backup_count)
 {
 	memset(handler, 0, sizeof(*handler));

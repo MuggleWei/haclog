@@ -40,8 +40,8 @@ void add_file_rotate_handler()
 {
 	static haclog_file_rotate_handler_t handler;
 	memset(&handler, 0, sizeof(handler));
-	if (haclog_file_rotate_handler_init(&handler, "logs/hello.rot.log", 16,
-										5) != 0) {
+	if (haclog_file_rotate_handler_init(&handler, "logs/hello.rot.log",
+										128 * 1024 * 1024, 5) != 0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);
 	}
@@ -54,7 +54,7 @@ void add_file_time_rot_handler()
 	static haclog_file_time_rot_handler_t handler;
 	memset(&handler, 0, sizeof(handler));
 	if (haclog_file_time_rotate_handler_init(
-			&handler, "logs/hello.time_rot.log", HACLOG_TIME_ROTATE_UNIT_SEC, 2,
+			&handler, "logs/hello.time_rot.log", HACLOG_TIME_ROTATE_UNIT_DAY, 2,
 			0) != 0) {
 		fprintf(stderr, "failed init file time rotate handler");
 		exit(EXIT_FAILURE);

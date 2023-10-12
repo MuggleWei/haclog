@@ -22,8 +22,8 @@ typedef struct haclog_file_rotate_handler {
 	haclog_handler_t base; //!< base log handler
 	char filepath[HACLOG_MAX_PATH];
 	FILE *fp;
-	unsigned int max_bytes;
 	unsigned int backup_count;
+	long max_bytes;
 	long offset;
 } haclog_file_rotate_handler_t;
 
@@ -42,7 +42,7 @@ typedef struct haclog_file_rotate_handler {
 HACLOG_EXPORT
 int haclog_file_rotate_handler_init(haclog_file_rotate_handler_t *handler,
 									const char *filepath,
-									unsigned int max_bytes,
+									long max_bytes,
 									unsigned int backup_count);
 
 HACLOG_EXTERN_C_END
