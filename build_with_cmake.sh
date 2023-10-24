@@ -5,8 +5,10 @@ build_dir=$origin_dir/build
 dist_dir=$origin_dir/dist
 
 cd $origin_dir
-mkdir -p $build_dir
+rm -rf $build_dir
+rm -rf $dist_dir
 
+mkdir -p $build_dir
 cmake \
 	-S $origin_dir -B $build_dir \
 	-DCMAKE_BUILD_TYPE=Release \

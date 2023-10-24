@@ -1,4 +1,7 @@
-project('haclog', 'c', license: 'MIT')
+project('haclog', 'c',
+  license: 'MIT',
+  license_files: ['LICENSE'],
+  meson_version: '>= 1.1.0')
 
 ################################
 # version
@@ -16,6 +19,7 @@ haclog_soversion = haclog_version_major
 message('--------------------------------')
 message('# haclog version:', haclog_version)
 message('# haclog soversion:', haclog_soversion)
+message('# default_library:', get_option('default_library'))
 message('--------------------------------')
 
 ################################
@@ -24,6 +28,17 @@ message('--------------------------------')
 
 conf_data = configuration_data()
 conf_data.set('HACLOG_VERSION', haclog_version)
+
+if get_option('default_library') == 'shared'
+  conf_data.set('HACLOG_USE_DLL', 'ON')
+elif get_option('default_library') == 'static'
+else
+  assert(false, '''
+haclog not support build shared and static in the same time
+setup --default-library=shared or --default-library=static
+  ''')
+endif
+
 configure_file(
   format: 'cmake@',
   input: 'haclog/haclog_config.h.in',
@@ -57,17 +72,22 @@ for f in files:
 '''
 
 src_c = run_command('python', '-c', src_fmt.format('c', 'True'), check: true)
+src_h = run_command('python', '-c', src_fmt.format('h', 'True'), check: true)
 haclog_src_c = src_c.stdout().strip().split('\n')
+haclog_src_h = src_h.stdout().strip().split('\n')
+haclog_gen_h = join_paths(meson.current_source_dir(), 'gen', 'haclog', 'haclog_config.h')
 
 incdir = include_directories('.', 'gen')
-library('haclog', haclog_src_c,
+libhaclog = library('haclog', haclog_src_c,
   include_directories: incdir,
   # NOTE: meson not support semver ext, e.g. 0.0.1-alpha.1
   #version: haclog_version,
   version: haclog_version_without_ext,
   soversion: haclog_soversion,
   install: true)
+install_headers(haclog_gen_h, subdir: 'haclog')
+install_headers(haclog_src_h, preserve_path: true)
 
-# TODO: install headers
-#src_h = run_command('python', '-c', src_fmt.format('h', 'True'), check: true)
-#haclog_src_h = src_h.stdout().strip().split('\n')
+# pkg-config
+pkg = import('pkgconfig')
+pkg.generate(libhaclog)
