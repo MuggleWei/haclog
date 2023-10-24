@@ -15,7 +15,9 @@ haclog(**H**appy **A**sync **C** Log) 是一个纯 C 的异步日志库, 该库�
 <img src="./doc/img/haclog.svg" />
 
 ## 编译
-可以很轻松的通过cmake构建此库, 通常要做的就是:
+`haclog` 支持多种构建工具
+
+### cmake
 ```
 mkdir build
 cd build
@@ -23,6 +25,12 @@ cmake ..
 ```
 
 若除编译日志库本身, 还想运行单元测试和基准测试, 可直接运行 `run_test_and_benchmark.sh` (Windows 下运行 `run_test_and_benchmark.bat`)
+
+### meson
+```
+meson setup build
+meson compile -C build
+```
 
 ## 使用示例
 ### hello
