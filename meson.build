@@ -68,8 +68,10 @@ gen_dir = os.path.join(src_dir, "gen", "haclog");
 os.makedirs(gen_dir, exist_ok=True);
 src_file = os.path.join(build_dir, "haclog_config.h");
 dst_file = os.path.join(gen_dir, "haclog_config.h");
-os.rename(src_file, dst_file);
-  '''.format(meson.current_build_dir(), meson.current_source_dir()),
+os.replace(src_file, dst_file);
+  '''.format(
+    meson.current_build_dir().replace('\\', '/'),
+    meson.current_source_dir().replace('\\', '/')),
   check: true)
 
 ################################
@@ -91,6 +93,7 @@ haclog_gen_h = join_paths(meson.current_source_dir(), 'gen', 'haclog', 'haclog_c
 incdir = include_directories('.', 'gen')
 libhaclog = library('haclog', haclog_src_c,
   include_directories: incdir,
+  c_args: '-DHACLOG_EXPORTS',
   # NOTE: meson not support semver ext, e.g. 0.0.1-alpha.1
   #version: haclog_version,
   version: haclog_version_without_ext,

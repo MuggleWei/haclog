@@ -85,7 +85,11 @@ static int haclog_consume(haclog_context_t *ctx,
 	return num_consume;
 }
 
+#if HACLOG_PLATFORM_WINDOWS
+static haclog_thread_ret_t __stdcall s_haclog_backend_func(void *args)
+#else
 static haclog_thread_ret_t s_haclog_backend_func(void *args)
+#endif
 {
 	HACLOG_UNUSED(args);
 
@@ -99,7 +103,7 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 	char *buf = (char *)malloc(bufsize);
 	if (buf == NULL) {
 		haclog_debug_break();
-		return NULL;
+		return 0;
 	}
 
 	while (1) {
