@@ -1,4 +1,4 @@
-project('haclog', 'c')
+project('haclog', 'c', license: 'MIT')
 
 ################################
 # version
@@ -51,18 +51,23 @@ os.rename(src_file, dst_file);
 ################################
 
 src_fmt ='''import glob;
-files = glob.glob("haclog/**/*.@0@", recursive=True);
+files = glob.glob("haclog/**/*.@0@", recursive=@1@);
 for f in files:
   print("{}".format(f))
 '''
 
-src_c = run_command('python', '-c', src_fmt.format('c'), check: true)
-src_h = run_command('python', '-c', src_fmt.format('h'), check: true)
+src_c = run_command('python', '-c', src_fmt.format('c', 'True'), check: true)
 haclog_src_c = src_c.stdout().strip().split('\n')
-haclog_src_h = src_h.stdout().strip().split('\n')
 
 incdir = include_directories('.', 'gen')
 library('haclog', haclog_src_c,
   include_directories: incdir,
+  # NOTE: meson not support semver ext, e.g. 0.0.1-alpha.1
+  #version: haclog_version,
   version: haclog_version_without_ext,
-  soversion: haclog_soversion)
+  soversion: haclog_soversion,
+  install: true)
+
+# TODO: install headers
+#src_h = run_command('python', '-c', src_fmt.format('h', 'True'), check: true)
+#haclog_src_h = src_h.stdout().strip().split('\n')
