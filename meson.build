@@ -39,6 +39,17 @@ setup --default-library=shared or --default-library=static
   ''')
 endif
 
+if build_machine.system() != 'windows'
+  compiler = meson.get_compiler('c')
+  dep_backtrace = compiler.find_library('backtrace', required: false)
+  if dep_backtrace.found()
+    if compiler.check_header('execinfo.h')
+      conf_data.set('HACLOG_HAVE_BACKTRACE', 1)
+      conf_data.set('HACLOG_BACKTRACE_HEADER', 'execinfo.h')
+    endif
+  endif
+endif
+
 configure_file(
   format: 'cmake@',
   input: 'haclog/haclog_config.h.in',
