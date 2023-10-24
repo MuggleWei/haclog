@@ -12,8 +12,10 @@ haclog(**H**appy **A**sync **C** Log) is a plain C asynchronous log library. The
 
 <img src="./doc/img/haclog.svg" />
 
-### Build
-It's easy to build this project with CMake, the typical workflow starts with:
+## Build
+`haclog` supports multiple build tools
+
+### cmake
 ```
 mkdir build
 cd build
@@ -21,6 +23,12 @@ cmake ..
 ```
 
 If you want to compile and run unit tests and benchmark, run `run_test_and_benchmark.sh` (in Windows, `run_test_and_benchmark.bat`)
+
+### meson
+```
+meson setup build
+meson compile -C build
+```
 
 ## Usage samples
 ### hello

@@ -25,3 +25,6 @@ _deps/
 _package/
 _packages/
 dist/
+
+######### meson gen file #########
+/gen
