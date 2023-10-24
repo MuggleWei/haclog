@@ -27,4 +27,4 @@ _packages/
 dist/
 
 ######### meson gen file #########
-/haclog/haclog_config.h
+/gen

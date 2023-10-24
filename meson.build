@@ -38,8 +38,10 @@ run_command('python', '-c',
 import os;
 build_dir = "@0@";
 src_dir = "@1@";
+gen_dir = os.path.join(src_dir, "gen", "haclog");
+os.makedirs(gen_dir, exist_ok=True);
 src_file = os.path.join(build_dir, "haclog_config.h");
-dst_file = os.path.join(src_dir, "haclog", "haclog_config.h");
+dst_file = os.path.join(gen_dir, "haclog_config.h");
 os.rename(src_file, dst_file);
   '''.format(meson.current_build_dir(), meson.current_source_dir()),
   check: true)
@@ -59,7 +61,7 @@ src_h = run_command('python', '-c', src_fmt.format('h'), check: true)
 haclog_src_c = src_c.stdout().strip().split('\n')
 haclog_src_h = src_h.stdout().strip().split('\n')
 
-incdir = include_directories('.')
+incdir = include_directories('.', 'gen')
 library('haclog', haclog_src_c,
   include_directories: incdir,
   version: haclog_version_without_ext,

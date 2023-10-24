@@ -9,3 +9,4 @@ rm -rf $build_dir
 meson setup $build_dir
 
 meson compile -C $build_dir
+DESTDIR=$dist_dir meson install -C $build_dir
