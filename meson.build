@@ -1,4 +1,8 @@
 project('haclog', 'c',
+  version: run_command('python', '-c', '''
+with open("version.txt", "r") as f:
+    print("{}".format(f.readline().strip("\n")))
+    ''', check: true).stdout().strip(),
   license: 'MIT',
   license_files: ['LICENSE'],
   meson_version: '>= 1.1.0')
@@ -6,9 +10,8 @@ project('haclog', 'c',
 ################################
 # version
 ################################
-fs = import('fs')
 
-haclog_version = fs.read('version.txt').strip()
+haclog_version = meson.project_version()
 haclog_version_without_ext = haclog_version.split('-')[0]
 haclog_semver = haclog_version_without_ext.split('.')
 haclog_version_major = haclog_semver[0]
