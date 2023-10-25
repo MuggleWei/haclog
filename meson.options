@@ -6,7 +6,3 @@ option('HACLOG_BUILD_BENCHMARK', type: 'boolean', value: false,
   description: 'Build benchmarks')
 option('HACLOG_BUILD_GBENCHMARK', type: 'boolean', value: false,
   description: 'Build google benchmarks')
-option('HACLOG_DOWNLOAD_TEST_LIB', type: 'boolean', value: false,
-  description: 'Download test lib if build testing is ON')
-option('HACLOG_DOWNLOAD_GBENCHMARK_LIB', type: 'boolean', value: false,
-  description: 'Download google benchmark lib if build gbenchmark is ON')

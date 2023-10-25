@@ -27,4 +27,6 @@ _packages/
 dist/
 
 ######### meson gen file #########
-/gen
+packagecache/
+/subprojects/unity
+/subprojects/google-benchmark
