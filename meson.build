@@ -54,9 +54,8 @@ endif
 
 if build_machine.system() != 'windows'
   compiler = meson.get_compiler('c')
-  dep_backtrace = compiler.find_library('backtrace', required: false)
-  if dep_backtrace.found()
-    if compiler.check_header('execinfo.h')
+  if compiler.has_header('execinfo.h')
+    if compiler.has_function('backtrace', prefix: '#include <execinfo.h>')
       conf_data.set('HACLOG_HAVE_BACKTRACE', 1)
       conf_data.set('HACLOG_BACKTRACE_HEADER', 'execinfo.h')
     endif
@@ -85,21 +84,33 @@ os.replace(src_file, dst_file);
   check: true)
 
 ################################
-# haclog
+# functions
 ################################
 
-src_fmt ='''import glob;
+func_glob ='''import glob;
 files = glob.glob("@0@/**/*.@1@", recursive=@2@);
 for f in files:
     print("{}".format(f))
 '''
 
-src_c = run_command(
-  'python', '-c', src_fmt.format('haclog', 'c', 'True'), check: true)
-src_h = run_command(
-  'python', '-c', src_fmt.format('haclog', 'h', 'True'), check: true)
-haclog_src_c = src_c.stdout().strip().split('\n')
-haclog_src_h = src_h.stdout().strip().split('\n')
+func_listdir = '''import os;
+dirs = os.listdir("@0@");
+for filename in dirs:
+    filepath = os.path.join("@0@", filename)
+    if os.path.isdir(filepath):
+        print(filename)
+'''
+
+################################
+# haclog
+################################
+
+cmd_src_c = run_command(
+  'python', '-c', func_glob.format('haclog', 'c', 'True'), check: true)
+cmd_src_h = run_command(
+  'python', '-c', func_glob.format('haclog', 'h', 'True'), check: true)
+haclog_src_c = cmd_src_c.stdout().strip().split('\n')
+haclog_src_h = cmd_src_h.stdout().strip().split('\n')
 haclog_gen_h = join_paths(
   meson.current_build_dir(), 'gen', 'haclog', 'haclog_config.h')
 
@@ -122,23 +133,15 @@ pkg.generate(libhaclog)
 # examples
 ################################
 
-listdir_fmt = '''import os;
-dirs = os.listdir("@0@");
-for filename in dirs:
-    filepath = os.path.join("@0@", filename)
-    if os.path.isdir(filepath):
-        print(filename)
-'''
-
 if get_option('HACLOG_BUILD_EXAMPLE')
-  listdir_example = run_command(
-    'python', '-c', listdir_fmt.format('example'), check: true)
-  example_dirs = listdir_example.stdout().strip().split('\n')
+  cmd_listdir_example = run_command(
+    'python', '-c', func_listdir.format('example'), check: true)
+  example_dirs = cmd_listdir_example.stdout().strip().split('\n')
 
   foreach example_dir : example_dirs
     example_filepath = join_paths('example', example_dir).replace('\\', '/')
     cmd_example_src_c = run_command(
-      'python', '-c', src_fmt.format(example_filepath, 'c', 'True'),
+      'python', '-c', func_glob.format(example_filepath, 'c', 'True'),
       check: true)
     example_src_c = cmd_example_src_c.stdout().strip().split('\n')
     example_incdir = include_directories(example_filepath, '.', 'gen')
