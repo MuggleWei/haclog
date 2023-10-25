@@ -1,0 +1,8 @@
+option('HACLOG_BUILD_TESTING', type: 'boolean', value: false,
+  description: 'Build testing')
+option('HACLOG_BUILD_EXAMPLE', type: 'boolean', value: false,
+  description: 'Build examples')
+option('HACLOG_BUILD_BENCHMARK', type: 'boolean', value: false,
+  description: 'Build benchmarks')
+option('HACLOG_BUILD_GBENCHMARK', type: 'boolean', value: false,
+  description: 'Build google benchmarks')

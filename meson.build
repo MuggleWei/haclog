@@ -23,6 +23,12 @@ message('--------------------------------')
 message('# haclog version:', haclog_version)
 message('# haclog soversion:', haclog_soversion)
 message('# default_library:', get_option('default_library'))
+message('# haclog HACLOG_BUILD_TESTING:', get_option('HACLOG_BUILD_TESTING'))
+message('# haclog HACLOG_BUILD_EXAMPLE:', get_option('HACLOG_BUILD_EXAMPLE'))
+message('# haclog HACLOG_BUILD_BENCHMARK:',
+  get_option('HACLOG_BUILD_BENCHMARK'))
+message('# haclog HACLOG_BUILD_GBENCHMARK:',
+  get_option('HACLOG_BUILD_GBENCHMARK'))
 message('--------------------------------')
 
 ################################
@@ -33,7 +39,7 @@ conf_data = configuration_data()
 conf_data.set('HACLOG_VERSION', haclog_version)
 
 if get_option('default_library') == 'shared'
-  conf_data.set('HACLOG_USE_DLL', 'ON')
+  conf_data.set('HACLOG_USE_DLL', 1)
 elif get_option('default_library') == 'static'
 else
   assert(false, '''
@@ -44,9 +50,8 @@ endif
 
 if build_machine.system() != 'windows'
   compiler = meson.get_compiler('c')
-  dep_backtrace = compiler.find_library('backtrace', required: false)
-  if dep_backtrace.found()
-    if compiler.check_header('execinfo.h')
+  if compiler.has_header('execinfo.h')
+    if compiler.has_function('backtrace', prefix: '#include <execinfo.h>')
       conf_data.set('HACLOG_HAVE_BACKTRACE', 1)
       conf_data.set('HACLOG_BACKTRACE_HEADER', 'execinfo.h')
     endif
@@ -75,20 +80,35 @@ os.replace(src_file, dst_file);
   check: true)
 
 ################################
+# functions
+################################
+
+func_glob ='''import glob;
+files = glob.glob("@0@/**/*.@1@", recursive=@2@);
+for f in files:
+    print("{}".format(f))
+'''
+
+func_listdir = '''import os;
+dirs = os.listdir("@0@");
+for filename in dirs:
+    filepath = os.path.join("@0@", filename)
+    if os.path.isdir(filepath):
+        print(filename)
+'''
+
+################################
 # haclog
 ################################
 
-src_fmt ='''import glob;
-files = glob.glob("haclog/**/*.@0@", recursive=@1@);
-for f in files:
-  print("{}".format(f))
-'''
-
-src_c = run_command('python', '-c', src_fmt.format('c', 'True'), check: true)
-src_h = run_command('python', '-c', src_fmt.format('h', 'True'), check: true)
-haclog_src_c = src_c.stdout().strip().split('\n')
-haclog_src_h = src_h.stdout().strip().split('\n')
-haclog_gen_h = join_paths(meson.current_build_dir(), 'gen', 'haclog', 'haclog_config.h')
+cmd_src_c = run_command(
+  'python', '-c', func_glob.format('haclog', 'c', 'True'), check: true)
+cmd_src_h = run_command(
+  'python', '-c', func_glob.format('haclog', 'h', 'True'), check: true)
+haclog_src_c = cmd_src_c.stdout().strip().split('\n')
+haclog_src_h = cmd_src_h.stdout().strip().split('\n')
+haclog_gen_h = join_paths(
+  meson.current_build_dir(), 'gen', 'haclog', 'haclog_config.h')
 
 incdir = include_directories('.', 'gen')
 libhaclog = library('haclog', haclog_src_c,
@@ -104,3 +124,81 @@ install_headers(haclog_src_h, preserve_path: true)
 # pkg-config
 pkg = import('pkgconfig')
 pkg.generate(libhaclog)
+
+################################
+# test
+################################
+
+if get_option('HACLOG_BUILD_TESTING')
+  unity_test_dep = dependency('unity', required: true)
+
+  cmd_listdir_test = run_command(
+    'python', '-c', func_listdir.format('test'), check: true)
+  test_dirs = cmd_listdir_test.stdout().strip().split('\n')
+
+  foreach test_dir : test_dirs
+    test_filepath = join_paths('test', test_dir).replace('\\', '/')
+    cmd_test_src_c = run_command(
+      'python', '-c', func_glob.format(test_filepath, 'c', 'True'),
+      check: true)
+    test_src_c = cmd_test_src_c.stdout().strip().split('\n')
+    test_incdir = include_directories(test_filepath, '.', 'gen')
+    test_exe = executable('test_' + test_dir, test_src_c,
+      include_directories: test_incdir,
+      link_with: libhaclog,
+      dependencies: unity_test_dep)
+    test('name of test', test_exe)
+  endforeach
+endif
+
+################################
+# examples
+################################
+
+if get_option('HACLOG_BUILD_EXAMPLE')
+  cmd_listdir_example = run_command(
+    'python', '-c', func_listdir.format('example'), check: true)
+  example_dirs = cmd_listdir_example.stdout().strip().split('\n')
+
+  foreach example_dir : example_dirs
+    example_filepath = join_paths('example', example_dir).replace('\\', '/')
+    cmd_example_src_c = run_command(
+      'python', '-c', func_glob.format(example_filepath, 'c', 'True'),
+      check: true)
+    example_src_c = cmd_example_src_c.stdout().strip().split('\n')
+    example_incdir = include_directories(example_filepath, '.', 'gen')
+    executable('example_' + example_dir, example_src_c,
+      include_directories: example_incdir,
+      link_with: libhaclog)
+  endforeach
+endif
+
+################################
+# benchmark
+################################
+
+if get_option('HACLOG_BUILD_BENCHMARK')
+  cmd_listdir_benchmark = run_command(
+    'python', '-c', func_listdir.format('benchmark'), check: true)
+  benchmark_dirs = cmd_listdir_benchmark.stdout().strip().split('\n')
+
+  foreach benchmark_dir : benchmark_dirs
+    benchmark_filepath = join_paths('benchmark', benchmark_dir).replace('\\', '/')
+    cmd_benchmark_src_c = run_command(
+      'python', '-c', func_glob.format(benchmark_filepath, 'c', 'True'),
+      check: true)
+    benchmark_src_c = cmd_benchmark_src_c.stdout().strip().split('\n')
+    benchmark_incdir = include_directories(benchmark_filepath, '.', 'gen')
+    executable('benchmark_' + benchmark_dir, benchmark_src_c,
+      include_directories: benchmark_incdir,
+      link_with: libhaclog)
+  endforeach
+endif
+
+################################
+# gbenchmark
+################################
+
+if get_option('HACLOG_BUILD_GBENCHMARK')
+  message('google benchmark without meson.build, ignore HACLOG_BUILD_GBENCHMARK')
+endif

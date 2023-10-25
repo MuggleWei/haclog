@@ -1,0 +1,7 @@
+[wrap-git]
+url = https://github.com/google/benchmark.git
+revision = v1.8.3
+depth = 1
+
+[provide]
+benchmark = google_benchmark_dep
