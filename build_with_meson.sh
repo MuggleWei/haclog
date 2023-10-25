@@ -15,12 +15,12 @@ meson setup \
 	--prefix=$dist_dir \
 	$build_dir
 
-meson configure \
-	-DHACLOG_BUILD_TESTING=true \
-	-DHACLOG_BUILD_EXAMPLE=true \
-	-DHACLOG_BUILD_BENCHMARK=true \
-	-DHACLOG_BUILD_GBENCHMARK=true \
-	$build_dir
+#meson configure \
+#    -DHACLOG_BUILD_TESTING=true \
+#    -DHACLOG_BUILD_EXAMPLE=true \
+#    -DHACLOG_BUILD_BENCHMARK=true \
+#    -DHACLOG_BUILD_GBENCHMARK=true \
+#    $build_dir
 
 meson compile -C $build_dir
 meson install -C $build_dir
