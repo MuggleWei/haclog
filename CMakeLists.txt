@@ -225,6 +225,11 @@ if (NOT ${BUILD_SHARED_LIBS})
 	)
 endif()
 
+if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
+	(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+	target_compile_options(${haclog} PUBLIC -save-temps=obj)
+endif()
+
 # threads
 find_package(Threads)
 if (Threads_FOUND)
@@ -342,7 +347,6 @@ function(add_app name folder)
 		${haclog_gen_dir})
 	target_link_libraries(${name} ${haclog})
 
-	# save temp object file, such as: asm code
 	if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
 		(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
 		target_compile_options(${name} PUBLIC -save-temps=obj)
