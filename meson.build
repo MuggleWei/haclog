@@ -23,6 +23,16 @@ message('--------------------------------')
 message('# haclog version:', haclog_version)
 message('# haclog soversion:', haclog_soversion)
 message('# default_library:', get_option('default_library'))
+#message('# haclog HACLOG_BUILD_TESTING:', get_option('HACLOG_BUILD_TESTING'))
+message('# haclog HACLOG_BUILD_EXAMPLE:', get_option('HACLOG_BUILD_EXAMPLE'))
+#message('# haclog HACLOG_BUILD_BENCHMARK:',
+#  get_option('HACLOG_BUILD_BENCHMARK'))
+#message('# haclog HACLOG_BUILD_GBENCHMARK:',
+#  get_option('HACLOG_BUILD_GBENCHMARK'))
+#message('# haclog HACLOG_DOWNLOAD_TEST_LIB:',
+#  get_option('HACLOG_DOWNLOAD_TEST_LIB'))
+#message('# haclog HACLOG_DOWNLOAD_GBENCHMARK_LIB:',
+#  get_option('HACLOG_DOWNLOAD_GBENCHMARK_LIB'))
 message('--------------------------------')
 
 ################################
@@ -33,7 +43,7 @@ conf_data = configuration_data()
 conf_data.set('HACLOG_VERSION', haclog_version)
 
 if get_option('default_library') == 'shared'
-  conf_data.set('HACLOG_USE_DLL', 'ON')
+  conf_data.set('HACLOG_USE_DLL', 1)
 elif get_option('default_library') == 'static'
 else
   assert(false, '''
@@ -79,16 +89,19 @@ os.replace(src_file, dst_file);
 ################################
 
 src_fmt ='''import glob;
-files = glob.glob("haclog/**/*.@0@", recursive=@1@);
+files = glob.glob("@0@/**/*.@1@", recursive=@2@);
 for f in files:
-  print("{}".format(f))
+    print("{}".format(f))
 '''
 
-src_c = run_command('python', '-c', src_fmt.format('c', 'True'), check: true)
-src_h = run_command('python', '-c', src_fmt.format('h', 'True'), check: true)
+src_c = run_command(
+  'python', '-c', src_fmt.format('haclog', 'c', 'True'), check: true)
+src_h = run_command(
+  'python', '-c', src_fmt.format('haclog', 'h', 'True'), check: true)
 haclog_src_c = src_c.stdout().strip().split('\n')
 haclog_src_h = src_h.stdout().strip().split('\n')
-haclog_gen_h = join_paths(meson.current_build_dir(), 'gen', 'haclog', 'haclog_config.h')
+haclog_gen_h = join_paths(
+  meson.current_build_dir(), 'gen', 'haclog', 'haclog_config.h')
 
 incdir = include_directories('.', 'gen')
 libhaclog = library('haclog', haclog_src_c,
@@ -104,3 +117,33 @@ install_headers(haclog_src_h, preserve_path: true)
 # pkg-config
 pkg = import('pkgconfig')
 pkg.generate(libhaclog)
+
+################################
+# examples
+################################
+
+listdir_fmt = '''import os;
+dirs = os.listdir("@0@");
+for filename in dirs:
+    filepath = os.path.join("@0@", filename)
+    if os.path.isdir(filepath):
+        print(filename)
+'''
+
+if get_option('HACLOG_BUILD_EXAMPLE')
+  listdir_example = run_command(
+    'python', '-c', listdir_fmt.format('example'), check: true)
+  example_dirs = listdir_example.stdout().strip().split('\n')
+
+  foreach example_dir : example_dirs
+    example_filepath = join_paths('example', example_dir).replace('\\', '/')
+    cmd_example_src_c = run_command(
+      'python', '-c', src_fmt.format(example_filepath, 'c', 'True'),
+      check: true)
+    example_src_c = cmd_example_src_c.stdout().strip().split('\n')
+    example_incdir = include_directories(example_filepath, '.', 'gen')
+    executable('example_' + example_dir, example_src_c,
+      include_directories: example_incdir,
+      link_with: libhaclog)
+  endforeach
+endif
