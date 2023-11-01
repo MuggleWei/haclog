@@ -213,7 +213,12 @@ target_include_directories(${haclog} PUBLIC
 	$<BUILD_INTERFACE:${haclog_src_dir}>
 	$<BUILD_INTERFACE:${haclog_gen_dir}>
 	$<INSTALL_INTERFACE:include>)
+
 target_compile_definitions(${haclog} PRIVATE HACLOG_EXPORTS)
+if (${CMAKE_C_COMPILER_ID} STREQUAL MSVC)
+	target_compile_definitions(${haclog} PRIVATE WIN32_LEAN_AND_MEAN)
+endif()
+
 set_target_properties(${haclog} PROPERTIES
 	LINKER_LANGUAGE C
 	DEBUG_POSTFIX d
@@ -225,8 +230,8 @@ if (NOT ${BUILD_SHARED_LIBS})
 	)
 endif()
 
-if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") OR
-	(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+if ((${CMAKE_C_COMPILER_ID} STREQUAL "GNU") OR
+	(${CMAKE_C_COMPILER_ID} STREQUAL "Clang"))
 	target_compile_options(${haclog} PUBLIC -save-temps=obj)
 endif()
 
