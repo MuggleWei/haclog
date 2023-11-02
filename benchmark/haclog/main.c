@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 #include "haclog/haclog.h"
 
 #define TOTAL_PER_ROUND 10000
@@ -113,6 +114,38 @@ void add_file_time_rot_handler()
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
 
+void output_statistics_info(double *avg_elapsed_arr, int n)
+{
+	double sum = 0.0;
+	double mean = 0.0;
+	double var = 0.0;
+	double std = 0.0;
+	double max_val = avg_elapsed_arr[0];
+	double min_val = avg_elapsed_arr[0];
+	for (int i = 0; i < n; ++i) {
+		sum += avg_elapsed_arr[i];
+		if (avg_elapsed_arr[i] > max_val) {
+			max_val = avg_elapsed_arr[i];
+		}
+		if (avg_elapsed_arr[i] < min_val) {
+			min_val = avg_elapsed_arr[i];
+		}
+	}
+	mean = sum / n;
+
+	for (int i = 0; i < n; i++) {
+		double tmp = avg_elapsed_arr[i] - mean;
+		var += tmp * tmp;
+	}
+	var /= n;
+	std = sqrt(var);
+
+	printf("max: %.2f\n", max_val);
+	printf("min: %.2f\n", min_val);
+	printf("mean: %.2f\n", mean);
+	printf("std: %.2f\n", std);
+}
+
 int main()
 {
 	// prepare handler
@@ -175,6 +208,9 @@ int main()
 		}
 		printf("\n");
 	}
+
+	// output statistics info
+	output_statistics_info(avg_elapsed_arr, NUM_THREAD * ROUND);
 
 	// cleanup
 	free(args);

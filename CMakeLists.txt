@@ -390,6 +390,7 @@ function(add_benchmark name folder)
 	message("add benchmark ${name} ${folder}")
 	set(name benchmark_${name})
 	add_app(${name} ${folder})
+	target_link_libraries(${name} m)
 endfunction()
 
 if (HACLOG_BUILD_BENCHMARK)
