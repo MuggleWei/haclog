@@ -77,8 +77,8 @@ void add_file_handler()
 {
 	static haclog_file_handler_t handler;
 	memset(&handler, 0, sizeof(handler));
-	if (haclog_file_handler_init(&handler, "logs/benchmark_haclog.log",
-								 "w") != 0) {
+	if (haclog_file_handler_init(&handler, "logs/benchmark_haclog.log", "w") !=
+		0) {
 		fprintf(stderr, "failed init file handler");
 		exit(EXIT_FAILURE);
 	}
@@ -114,10 +114,16 @@ void add_file_time_rot_handler()
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
 
+int double_cmp_func(const void *a, const void *b)
+{
+	return (*(double *)a - *(double *)b);
+}
+
 void output_statistics_info(double *avg_elapsed_arr, int n)
 {
 	double sum = 0.0;
 	double mean = 0.0;
+	double median = 0.0;
 	double var = 0.0;
 	double std = 0.0;
 	double max_val = avg_elapsed_arr[0];
@@ -140,8 +146,12 @@ void output_statistics_info(double *avg_elapsed_arr, int n)
 	var /= n;
 	std = sqrt(var);
 
+	qsort(avg_elapsed_arr, n, sizeof(double), double_cmp_func);
+	median = avg_elapsed_arr[n / 2];
+
 	printf("max: %.2f\n", max_val);
 	printf("min: %.2f\n", min_val);
+	printf("median: %.2f\n", median);
 	printf("mean: %.2f\n", mean);
 	printf("std: %.2f\n", std);
 }
