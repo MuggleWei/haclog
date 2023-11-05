@@ -618,7 +618,7 @@ static void haclog_spec_type_n_output(haclog_printf_spec_t *spec)
 | (none) | int           | unsigned int           | double          | int    | char*    | void* | int*           |
 | hh     | signed char   | unsigned char          | signed char*    |        |          |       |                |
 | h      | short int     | unsigned short int     |                 |        |          |       | short int*     |
-| l	     | long int	     | unsigned long int      |                 | wint_t | wchar_t* |       | long int*      |
+| l      | long int      | unsigned long int      |                 | wint_t | wchar_t* |       | long int*      |
 | ll     | long long int | unsigned long long int |                 |        |          |       | long long int* |
 | j      | intmax_t      | uintmax_t              |                 |        |          |       | intmax_t*      |
 | z      | size_t        | size_t                 |                 |        |          |       | size_t*        |
@@ -1267,9 +1267,8 @@ int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
 				total_bytes += n;
 				buf_remain -= n;
 			}
-
-			fmt_pos = spec->pos_end;
 		}
+		fmt_pos = spec->pos_end;
 
 		int width = 0;
 		if (spec->width == HACLOG_PRINTF_SPEC_DYNAMIC) {
