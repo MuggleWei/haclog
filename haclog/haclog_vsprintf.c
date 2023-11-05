@@ -477,6 +477,8 @@ static int haclog_printf_spec_fillup(haclog_printf_primitive_t *primitive)
 	return 0;
 }
 
+#if HACLOG_ENABLE_DEBUG_FUNCS
+
 static void haclog_spec_type_di_output(haclog_printf_spec_t *spec)
 {
 	switch (spec->length) {
@@ -625,6 +627,7 @@ static void haclog_spec_type_n_output(haclog_printf_spec_t *spec)
 | t      | ptrdiff_t     | ptrdiff_t              |                 |        |          |       | ptrdiff_t*     |
 | L      |               |                        | long double     |        |          |       |                |
  * */
+
 static void haclog_spec_type_output(haclog_printf_spec_t *spec)
 {
 	switch (spec->type) {
@@ -718,6 +721,23 @@ static void haclog_printf_spec_show(const char *fmt, haclog_printf_spec_t *spec)
 	fwrite("\n", 1, 1, stdout);
 	fflush(stdout);
 }
+
+void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive)
+{
+	fprintf(stdout, "--------------------------------\n");
+	fwrite(primitive->fmt, 1, primitive->fmt_len, stdout);
+	fwrite("\n", 1, 1, stdout);
+	fprintf(stdout, "total param size: %u\n", primitive->param_size);
+
+	fprintf(stdout, "%d|%s:%d|%s\n", primitive->loc.level, primitive->loc.file,
+			primitive->loc.line, primitive->loc.func);
+
+	for (unsigned int i = 0; i < primitive->num_params; i++) {
+		haclog_printf_spec_show(primitive->fmt, &primitive->specs[i]);
+	}
+}
+
+#endif
 
 haclog_printf_primitive_t *
 haclog_printf_primitive_gen(const char *fmt, const haclog_printf_loc_t *loc)
@@ -894,21 +914,6 @@ int haclog_printf_spec_param_size(haclog_printf_spec_t *spec)
 	}
 
 	return param_size;
-}
-
-void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive)
-{
-	fprintf(stdout, "--------------------------------\n");
-	fwrite(primitive->fmt, 1, primitive->fmt_len, stdout);
-	fwrite("\n", 1, 1, stdout);
-	fprintf(stdout, "total param size: %u\n", primitive->param_size);
-
-	fprintf(stdout, "%d|%s:%d|%s\n", primitive->loc.level, primitive->loc.file,
-			primitive->loc.line, primitive->loc.func);
-
-	for (unsigned int i = 0; i < primitive->num_params; i++) {
-		haclog_printf_spec_show(primitive->fmt, &primitive->specs[i]);
-	}
 }
 
 typedef struct haclog_str_cache {

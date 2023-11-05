@@ -155,6 +155,7 @@ int haclog_printf_num_params(const char *fmt, unsigned int *num_params,
 HACLOG_EXPORT
 int haclog_printf_spec_param_size(haclog_printf_spec_t *spec);
 
+#if HACLOG_ENABLE_DEBUG_FUNCS
 /**
  * @brief show primitive for debug
  *
@@ -162,6 +163,12 @@ int haclog_printf_spec_param_size(haclog_printf_spec_t *spec);
  */
 HACLOG_EXPORT
 void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive);
+
+#else
+	#define haclog_printf_primitive_show(primitive) \
+		do {                                        \
+		} while (0)
+#endif
 
 // format attribute
 #if __GNUC__
