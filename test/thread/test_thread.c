@@ -1,5 +1,4 @@
 #include "haclog/haclog.h"
-#include "haclog/haclog_thread.h"
 #include "unity.h"
 #include <stdlib.h>
 

@@ -249,7 +249,11 @@ void test_bytes_buf_join_case1()
 	haclog_bytes_buffer_free(bytes_buf);
 }
 
-static haclog_thread_ret_t fn_thread_bytes_buf_join(void *args)
+#if HACLOG_PLATFORM_WINDOWS
+static haclog_thread_ret_t __stdcall s_thread_bytes_buf_join_func(void *args)
+#else
+static haclog_thread_ret_t s_thread_bytes_buf_join_func(void *args)
+#endif
 {
 	haclog_bytes_buffer_t *bytes_buf = (haclog_bytes_buffer_t *)args;
 	haclog_bytes_buffer_join(bytes_buf);
@@ -264,7 +268,7 @@ void test_bytes_buf_join_case2()
 	haclog_bytes_buffer_w_move(bytes_buf, HACLOG_CACHE_INTERVAL);
 
 	haclog_thread_t th;
-	haclog_thread_create(&th, fn_thread_bytes_buf_join, bytes_buf);
+	haclog_thread_create(&th, s_thread_bytes_buf_join_func, bytes_buf);
 
 	for (int i = 0; i < 100; i++) {
 		haclog_nsleep(1 * 1000 * 1000);
