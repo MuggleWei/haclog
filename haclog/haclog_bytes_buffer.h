@@ -20,6 +20,7 @@ typedef struct haclog_bytes_buffer {
 	char *buffer;
 	haclog_atomic_int capacity;
 	haclog_atomic_int w;
+	// char cache_line_interval[HACLOG_CACHE_INTERVAL];
 	haclog_atomic_int r;
 } haclog_bytes_buffer_t;
 

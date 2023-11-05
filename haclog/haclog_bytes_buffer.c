@@ -19,7 +19,7 @@ haclog_bytes_buffer_t *haclog_bytes_buffer_new(int capacity)
 
 	memset(bytes_buf, 0, sizeof(*bytes_buf));
 
-	if (capacity <= 8) {
+	if (capacity < 2 * HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL) {
 		haclog_set_error(HACLOG_ERR_ARGUMENTS);
 		haclog_bytes_buffer_free(bytes_buf);
 		return NULL;
