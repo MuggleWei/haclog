@@ -574,8 +574,11 @@ void test_log_format_type_p_none()
 	void *p = handler;
 
 	char buf[64];
+#if HACLOG_PLATFORM_WINDOWS
+	snprintf(buf, sizeof(buf), "%016llX", (unsigned long long)p);
+#else
 	snprintf(buf, sizeof(buf), "0x%llx", (unsigned long long)p);
-
+#endif
 	LOG_DEBUG("%p", p);
 	wait_test_log_n(handler, 1);
 	TEST_ASSERT_EQUAL_STRING(buf, handler->buf_cache[0]);
