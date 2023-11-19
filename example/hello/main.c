@@ -78,7 +78,15 @@ int main()
 	LOG_INFO("info message");
 	LOG_WARNING("warning message");
 	LOG_ERROR("error message");
-	LOG_FATAL("fatal message");
+
+	// NOTE: will crash when build type is DEBUG
+	LOG_FATAL("fatal message\n"
+			  "NOTE: fatal log crash when build type is DEBUG");
+	int actual = 0;
+	int expect = 1;
+	HACLOG_ASSERT(actual == expect);
+	HACLOG_ASSERT_MSG(actual == expect, "actual: %d, expect: %d", actual,
+					  expect);
 
 	LOG_INFO("bye");
 

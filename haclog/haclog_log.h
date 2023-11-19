@@ -15,6 +15,7 @@
 #include "haclog/haclog_vsprintf.h"
 #include "haclog/haclog_thread_context.h"
 #include "haclog/handler/haclog_handler.h"
+#include "haclog/haclog_stacktrace.h"
 #include <assert.h>
 
 HACLOG_EXTERN_C_BEGIN
@@ -85,8 +86,23 @@ static_assert(0, "haclog can't find c or c++ version");
 	HACLOG_LOG_DEFAULT(HACLOG_LEVEL_WARNING, format, ##__VA_ARGS__)
 #define HACLOG_ERROR(format, ...) \
 	HACLOG_LOG_DEFAULT(HACLOG_LEVEL_ERROR, format, ##__VA_ARGS__)
-#define HACLOG_FATAL(format, ...) \
-	HACLOG_LOG_DEFAULT(HACLOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+#define HACLOG_FATAL(format, ...)                                  \
+	HACLOG_LOG_DEFAULT(HACLOG_LEVEL_FATAL, format, ##__VA_ARGS__); \
+	haclog_debug_break()
+
+#define HACLOG_ASSERT(x)                    \
+	do {                                    \
+		if (!(x)) {                         \
+			HACLOG_FATAL("Assertion: " #x); \
+		}                                   \
+	} while (0)
+
+#define HACLOG_ASSERT_MSG(x, format, ...)                              \
+	do {                                                               \
+		if (!(x)) {                                                    \
+			HACLOG_FATAL("Assertion: " #x ", " format, ##__VA_ARGS__); \
+		}                                                              \
+	} while (0)
 
 #if HACLOG_HOLD_LOG_MACRO
 
@@ -100,8 +116,9 @@ static_assert(0, "haclog can't find c or c++ version");
 		HACLOG_LOG_DEFAULT(HACLOG_LEVEL_WARNING, format, ##__VA_ARGS__)
 	#define LOG_ERROR(format, ...) \
 		HACLOG_LOG_DEFAULT(HACLOG_LEVEL_ERROR, format, ##__VA_ARGS__)
-	#define LOG_FATAL(format, ...) \
-		HACLOG_LOG_DEFAULT(HACLOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+	#define LOG_FATAL(format, ...)                                     \
+		HACLOG_LOG_DEFAULT(HACLOG_LEVEL_FATAL, format, ##__VA_ARGS__); \
+		haclog_debug_break()
 
 	#define LOG_LEVEL_TRACE HACLOG_LEVEL_TRACE
 	#define LOG_LEVEL_DEBUG HACLOG_LEVEL_DEBUG
