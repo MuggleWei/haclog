@@ -66,13 +66,15 @@ int main()
 	HACLOG_DEBUG("π = %.5f", pi);
 
 	// NOTE: assert false will crash when build type is debug
-	int actual = 0;
+	int actual = 1;
 	int expect = 1;
 	HACLOG_ASSERT_MSG(actual == expect,
 		"actual: %d, expect: %d", actual, expect);
 
 	// NOTE: fatal level log will crash when build type is debug
-	HACLOG_FATAL("fatal message! crash when debug");
+	if (actual != expect) {
+		HACLOG_FATAL("actual != expect, crash when debug");
+	}
 
 	// cleanup thread context
 	haclog_thread_context_init();
