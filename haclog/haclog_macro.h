@@ -51,6 +51,8 @@
 	#else
 		// Unknown Apple platform
 	#endif
+#elif __ANDROID__
+	#define HACLOG_PLATFORM_ANDROID 1
 #elif __linux__
 	#define HACLOG_PLATFORM_LINUX 1
 #elif __FreeBSD__

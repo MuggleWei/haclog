@@ -34,7 +34,7 @@ static haclog_spinlock_t spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK;
 void run_round(log_msg_t *arr, int arrlen, double *avg_elapsed)
 {
 	struct timespec ts1, ts2;
-	timespec_get(&ts1, TIME_UTC);
+	haclog_realtime_get(ts1);
 
 	for (int i = 0; i < arrlen; i++) {
 		log_msg_t *msg = arr + i;
@@ -43,7 +43,7 @@ void run_round(log_msg_t *arr, int arrlen, double *avg_elapsed)
 					(unsigned long)msg->u32, (long)msg->i32, msg->s);
 	}
 
-	timespec_get(&ts2, TIME_UTC);
+	haclog_realtime_get(ts2);
 	unsigned long elapsed =
 		(ts2.tv_sec - ts1.tv_sec) * 1000000000 + ts2.tv_nsec - ts1.tv_nsec;
 	*avg_elapsed = (double)elapsed / arrlen;
