@@ -21,7 +21,7 @@ int haclog_nsleep(unsigned long ns)
 		hundred_ns = 1;
 	}
 
-	// NOTE: 
+	// NOTE:
 	//   * negative value represent relative
 	//   * time interval unit is 100 ns
 	ft.QuadPart = -hundred_ns;
@@ -33,7 +33,8 @@ int haclog_nsleep(unsigned long ns)
 
 	return 0;
 #else
-	#if _POSIX_C_SOURCE >= 199309L || HACLOG_PLATFORM_APPLE
+	#if _POSIX_C_SOURCE >= 199309L || HACLOG_PLATFORM_APPLE || \
+		HACLOG_PLATFORM_ANDROID
 	struct timespec ts = { .tv_sec = 0, .tv_nsec = ns };
 
 	int res = 0;

@@ -145,7 +145,7 @@ void producer(haclog_bytes_buffer_t *bytes_buf)
 		// fillup hdr
 		haclog_serialize_hdr_t *hdr =
 			(haclog_serialize_hdr_t *)haclog_bytes_buffer_get(bytes_buf, w_hdr);
-		timespec_get(&hdr->ts, TIME_UTC);
+		haclog_realtime_get(hdr->ts);
 		hdr->pos_const = w_const_args;
 		hdr->pos_str = w_str;
 		hdr->extra_len = extra_len;

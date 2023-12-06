@@ -4,6 +4,7 @@
 ![linux-clang](https://github.com/MuggleWei/haclog/actions/workflows/linux-clang.yaml/badge.svg?branch=master)
 ![win-msvc](https://github.com/MuggleWei/haclog/actions/workflows/win-msvc.yaml/badge.svg?branch=master)
 ![macos-clang](https://github.com/MuggleWei/haclog/actions/workflows/macos-clang.yaml/badge.svg?branch=master)
+![android](https://github.com/MuggleWei/haclog/actions/workflows/android-cmake.yaml/badge.svg?branch=master)
 
 * [readme EN](./README.md)
 * [readme 中文](./README_cn.md)
