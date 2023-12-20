@@ -22,15 +22,38 @@ HACLOG_EXTERN_C_BEGIN
 
 // minimum required: c11 or c++11
 #if __cplusplus
+	#if defined(_MSC_VER)
+static_assert(_MSC_VER >= 1900, "haclog minimum required VS2015");
+	#else
 static_assert(__cplusplus >= 201103L, "haclog minimum required c11 or c++11");
+	#endif
 #elif __STDC_VERSION__
 	#if __STDC_VERSION__ < 201112L
 static_assert(0, "haclog minimum required c11 or c++11");
 	#endif
+#elif _MSC_VER
+static_assert(_MSC_VER >= 1900, "haclog minimum required VS2015");
 #else
-	#if !defined(HACLOG_PLATFORM_WINDOWS)
 static_assert(0, "haclog can't find c or c++ version");
-	#endif
+#endif
+
+#if defined(_MSC_VER) && _MSC_VER < 1920
+	// MSVC version < VS 16.0 (v142 toolset)
+	#define HACLOG_LOC(lvl)                                \
+		haclog_constexpr const haclog_printf_loc_t loc = { \
+			__FILE__,                                      \
+			__FUNCTION__,                                  \
+			__LINE__,                                      \
+			lvl,                                           \
+		}
+#else
+	#define HACLOG_LOC(lvl)                                \
+		haclog_constexpr const haclog_printf_loc_t loc = { \
+			.file = __FILE__,                              \
+			.func = __FUNCTION__,                          \
+			.line = __LINE__,                              \
+			.level = lvl,                                  \
+		}
 #endif
 
 #define HACLOG_SERIALIZE(bytes_buf, lvl, fmt, ...)                             \
@@ -41,12 +64,7 @@ static_assert(0, "haclog can't find c or c++ version");
 			static haclog_spinlock_t spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK; \
 			haclog_spinlock_lock(&spinlock);                                   \
 			if (primitive == NULL) {                                           \
-				haclog_constexpr const haclog_printf_loc_t loc = {             \
-					.file = __FILE__,                                          \
-					.func = __FUNCTION__,                                      \
-					.line = __LINE__,                                          \
-					.level = lvl,                                              \
-				};                                                             \
+				HACLOG_LOC(lvl);                                               \
 				primitive = haclog_printf_primitive_gen(fmt, &loc);            \
 			}                                                                  \
 			haclog_spinlock_unlock(&spinlock);                                 \
