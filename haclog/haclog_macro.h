@@ -67,7 +67,11 @@
 
 // constexpr
 #ifdef __cplusplus
-	#define haclog_constexpr constexpr
+	#if defined(_MSC_VER) && _MSC_VER < 1920
+		#define haclog_constexpr
+	#else
+		#define haclog_constexpr constexpr
+	#endif
 #else
 	#define haclog_constexpr
 #endif
