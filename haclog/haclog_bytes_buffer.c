@@ -103,8 +103,12 @@ int haclog_bytes_buffer_w_move(haclog_bytes_buffer_t *bytes_buf,
 							   haclog_atomic_int pos)
 {
 	if (pos < 0 || pos >= bytes_buf->capacity) {
-		haclog_set_error(HACLOG_ERR_ARGUMENTS);
-		return -1;
+		if (pos == bytes_buf->capacity) {
+			pos = 0;
+		} else {
+			haclog_set_error(HACLOG_ERR_ARGUMENTS);
+			return -1;
+		}
 	}
 
 	haclog_atomic_store(&bytes_buf->w, pos, haclog_memory_order_release);
@@ -115,8 +119,12 @@ int haclog_bytes_buffer_r_move(haclog_bytes_buffer_t *bytes_buf,
 							   haclog_atomic_int pos)
 {
 	if (pos < 0 || pos >= bytes_buf->capacity) {
-		haclog_set_error(HACLOG_ERR_ARGUMENTS);
-		return -1;
+		if (pos == bytes_buf->capacity) {
+			pos = 0;
+		} else {
+			haclog_set_error(HACLOG_ERR_ARGUMENTS);
+			return -1;
+		}
 	}
 
 	haclog_atomic_store(&bytes_buf->r, pos, haclog_memory_order_relaxed);
