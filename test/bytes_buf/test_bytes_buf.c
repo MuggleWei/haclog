@@ -339,8 +339,9 @@ void test_bytes_buf_case3()
 	bytes_buf->w = 4194080;
 	bytes_buf->r = 4194080;
 
-	const haclog_atomic_int hdr_size =
-		(haclog_atomic_int)sizeof(haclog_serialize_hdr_t);
+	// const haclog_atomic_int hdr_size =
+	// 	(haclog_atomic_int)sizeof(haclog_serialize_hdr_t);
+	const haclog_atomic_int hdr_size = 48;
 	haclog_atomic_int r = 4194080;
 	haclog_atomic_int w = 4194080;
 	haclog_atomic_int w_hdr = 0;
