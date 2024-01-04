@@ -324,6 +324,63 @@ void test_bytes_buf_case2()
 	haclog_bytes_buffer_free(bytes_buf);
 }
 
+#define HACLOG_FETCH_W(bytes_buf, r, w, num_bytes, ret)             \
+	do {                                                            \
+		ret = haclog_bytes_buffer_w_fc(bytes_buf, num_bytes, r, w); \
+		TEST_ASSERT_TRUE(ret >= 0 && ret < bytes_buf->capacity);    \
+		if (ret >= 0) {                                             \
+			break;                                                  \
+		}                                                           \
+	} while (1);
+
+void test_bytes_buf_case3()
+{
+	haclog_bytes_buffer_t *bytes_buf = haclog_bytes_buffer_new(1024 * 1024 * 4);
+	bytes_buf->w = 4194080;
+	bytes_buf->r = 4194080;
+
+	// const haclog_atomic_int hdr_size =
+	// 	(haclog_atomic_int)sizeof(haclog_serialize_hdr_t);
+	const haclog_atomic_int hdr_size = 48;
+	haclog_atomic_int r = 4194080;
+	haclog_atomic_int w = 4194080;
+	haclog_atomic_int w_hdr = 0;
+	haclog_atomic_int w_const_args = 0;
+	haclog_atomic_int w_str = 0;
+	haclog_atomic_int w_cache_line = 0;
+
+	HACLOG_FETCH_W(bytes_buf, r, w, hdr_size, w_hdr);
+	w = w_hdr + hdr_size;
+	TEST_ASSERT_EQUAL(w_hdr, 4194080);
+	TEST_ASSERT_EQUAL(w, 4194128);
+
+	// serialize const arguments
+	haclog_atomic_int param_size = 40;
+	HACLOG_FETCH_W(bytes_buf, r, w, param_size, w_const_args);
+	w = w_const_args + param_size;
+	TEST_ASSERT_EQUAL(w_const_args, 4194128);
+	TEST_ASSERT_EQUAL(w, 4194168);
+
+	// serialize string arguments
+	unsigned long extra_len = 8;
+	HACLOG_FETCH_W(bytes_buf, r, w, extra_len, w_str);
+	w = w_str + extra_len;
+	TEST_ASSERT_EQUAL(w_str, 4194168);
+	TEST_ASSERT_EQUAL(w, 4194176);
+
+	// cache line
+	HACLOG_FETCH_W(bytes_buf, r, w, HACLOG_CACHE_INTERVAL, w_cache_line);
+	w = w_cache_line + HACLOG_CACHE_INTERVAL;
+	TEST_ASSERT_EQUAL(w_cache_line, 4194176);
+	TEST_ASSERT_EQUAL(w, 4194304);
+
+	// move writer
+	int ret = haclog_bytes_buffer_w_move(bytes_buf, w);
+	TEST_ASSERT_EQUAL(ret, 0);
+
+	haclog_bytes_buffer_free(bytes_buf);
+}
+
 int main()
 {
 	UNITY_BEGIN();
@@ -345,6 +402,7 @@ int main()
 	RUN_TEST(test_bytes_buf_join_case2);
 	RUN_TEST(test_bytes_buf_case1);
 	RUN_TEST(test_bytes_buf_case2);
+	RUN_TEST(test_bytes_buf_case3);
 
 	return UNITY_END();
 }
