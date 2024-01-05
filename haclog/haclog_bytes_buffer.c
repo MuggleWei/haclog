@@ -69,7 +69,9 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 		 */
 		// contiguous writable
 		haclog_atomic_int cw = bytes_buf->capacity - w;
-		if (cw < num_bytes) {
+		if (cw > num_bytes) {
+			return w;
+		} else if (cw < num_bytes) {
 			if (r - HACLOG_BYTES_BUFFER_WR_MIN_INTERVAL < num_bytes) {
 				// need wait reader move
 				return -2;
@@ -80,9 +82,21 @@ haclog_atomic_int haclog_bytes_buffer_w_fc(haclog_bytes_buffer_t *bytes_buf,
 				 */
 				return 0;
 			}
-
 		} else {
-			return w;
+			/*
+	      (real w)     r            (w)
+			 |---------|-----------|
+			 */
+			// NOTE:
+			//   In this situation, w move to cap, if next action is 
+			//   haclog_bytes_buffer_w_move, w actually move to 0, it need to
+			//   detect r position
+			if (r == 0) {
+				// need wait reader move
+				return -2;
+			} else {
+				return w;
+			}
 		}
 	} else {
 		/*
