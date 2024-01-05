@@ -57,9 +57,13 @@ void test_bytes_buf_w_fc_case2()
 
 	num_bytes = HACLOG_CACHE_INTERVAL;
 	haclog_bytes_buffer_w_move(bytes_buf, bytes_buf->capacity - num_bytes);
-	pos = haclog_bytes_buffer_w_fc(bytes_buf, num_bytes, bytes_buf->r,
+	pos = haclog_bytes_buffer_w_fc(bytes_buf, num_bytes - 1, bytes_buf->r,
 								   bytes_buf->w);
 	TEST_ASSERT_EQUAL(pos, bytes_buf->capacity - num_bytes);
+
+	pos = haclog_bytes_buffer_w_fc(bytes_buf, num_bytes, bytes_buf->r,
+								   bytes_buf->w);
+	TEST_ASSERT_EQUAL(pos, -2);
 
 	haclog_bytes_buffer_free(bytes_buf);
 }
