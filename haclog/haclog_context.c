@@ -11,6 +11,7 @@ haclog_context_t *haclog_context_get()
 {
 	static haclog_context_t s_ctx = {
 		.spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK,
+		.th_ctx_add_list = { .next = NULL, .th_ctx = NULL },
 		.th_ctx_head = { .next = NULL, .th_ctx = NULL },
 		.n_handler = 0,
 		.level = HACLOG_LEVEL_FATAL,
