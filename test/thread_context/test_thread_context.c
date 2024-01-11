@@ -74,6 +74,17 @@ static haclog_thread_ret_t s_free_thread_ctx_func(void *args)
 	return 0;
 }
 
+void test_ctx_init()
+{
+	haclog_context_t *ctx = haclog_context_get();
+	TEST_ASSERT_EQUAL(ctx->spinlock, HACLOG_SPINLOCK_STATUS_UNLOCK);
+	TEST_ASSERT_NULL(ctx->th_ctx_add_list.next);
+	TEST_ASSERT_NULL(ctx->th_ctx_add_list.th_ctx);
+	TEST_ASSERT_NULL(ctx->th_ctx_head.next);
+	TEST_ASSERT_NULL(ctx->th_ctx_head.th_ctx);
+	TEST_ASSERT_EQUAL(ctx->n_handler, 0);
+}
+
 void test_thread_ctx_case1()
 {
 	haclog_thread_context_t *thread_ctx = haclog_thread_context_init();
@@ -95,6 +106,7 @@ int main()
 {
 	UNITY_BEGIN();
 
+	RUN_TEST(test_ctx_init);
 	RUN_TEST(test_thread_ctx_case1);
 
 	return UNITY_END();
