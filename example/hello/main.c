@@ -63,6 +63,60 @@ void add_file_time_rot_handler()
 	haclog_context_add_handler((haclog_handler_t *)&handler);
 }
 
+typedef struct {
+	int i;
+	short si;
+	long li;
+	long long lli;
+
+	unsigned int u;
+	unsigned short su;
+	unsigned long lu;
+	unsigned long long llu;
+
+	float f;
+	double d;
+	long double ld;
+	const char *s;
+} data_t;
+
+void output_type_and_specifiers()
+{
+	data_t data;
+	memset(&data, 0, sizeof(data));
+	data.s = "hello world";
+
+	LOG_INFO("----------------");
+	LOG_INFO("types and specifiers");
+	LOG_INFO("----------------");
+	LOG_INFO(
+		"\nSpecifiers\n"
+		"| length | d i           | u o x X                | f F e E g G a A | c      | s        | p     | n              |\n"
+		"------------------------------------------------------------------------------------------------------------------\n"
+		"| (none) | int           | unsigned int           | double          | int    | char*    | void* | int*           |\n"
+		"| hh     | signed char   | unsigned char          | signed char*    |        |          |       |                |\n"
+		"| h      | short int     | unsigned short int     |                 |        |          |       | short int*     |\n"
+		"| l      | long int      | unsigned long int      |                 | wint_t | wchar_t* |       | long int*      |\n"
+		"| ll     | long long int | unsigned long long int |                 |        |          |       | long long int* |\n"
+		"| j      | intmax_t      | uintmax_t              |                 |        |          |       | intmax_t*      |\n"
+		"| z      | size_t        | size_t                 |                 |        |          |       | size_t*        |\n"
+		"| t      | ptrdiff_t     | ptrdiff_t              |                 |        |          |       | ptrdiff_t*     |\n"
+		"| L      |               |                        | long double     |        |          |       |                |\n");
+
+	LOG_INFO("int(d): %d, short(hd): %hd, long(ld): %ld, long long(lld): %lld",
+			 data.i, data.si, data.li, data.lli);
+	LOG_INFO("unsigned int(u): %u, unsigned short(hu): %hu, "
+			 "unsigned long(lu): %lu, unsigned long long(llu): %llu",
+			 data.u, data.su, data.lu, data.llu);
+	LOG_INFO("float(f): %f, double(f): %f, long double(Lf): %Lf", data.f,
+			 data.d, data.ld);
+	LOG_INFO("const char*(s): %s", data.s);
+	LOG_WARNING(
+		"support non-standard(in c99 but not in c11) double specifier(lf):"
+		" %lf\n",
+		data.d);
+}
+
 int main()
 {
 	add_console_handler();
@@ -73,6 +127,13 @@ int main()
 
 	haclog_thread_context_init();
 
+	// output different type
+	output_type_and_specifiers();
+
+	// output different level
+	LOG_INFO("----------------");
+	LOG_INFO("levels");
+	LOG_INFO("----------------");
 	LOG_TRACE("trace message");
 	LOG_DEBUG("debug message");
 	LOG_INFO("info message");

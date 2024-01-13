@@ -237,7 +237,11 @@ static int haclog_printf_spec_fillup_ft_uoxX(haclog_printf_spec_t *spec)
 static int haclog_printf_spec_fillup_ft_fFeEgGaA(haclog_printf_spec_t *spec)
 {
 	switch (spec->length) {
-	case HACLOG_PRINTF_LENGTH_none: {
+	case HACLOG_PRINTF_LENGTH_none:
+	case HACLOG_PRINTF_LENGTH_l: {
+		// NOTE:
+		//   HACLOG_PRINTF_LENGTH_l(%lf) is no longer part of the standard, but 
+		//   too many people still use %lf as specifier for double
 		spec->fmt_type = HACLOG_FT_DOUBLE;
 	} break;
 	case HACLOG_PRINTF_LENGTH_L: {
