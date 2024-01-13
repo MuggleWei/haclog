@@ -111,10 +111,11 @@ void output_type_and_specifiers()
 	LOG_INFO("float(f): %f, double(f): %f, long double(Lf): %Lf", data.f,
 			 data.d, data.ld);
 	LOG_INFO("const char*(s): %s", data.s);
-	LOG_WARNING(
-		"support non-standard(in c99 but not in c11) double specifier(lf):"
-		" %lf\n",
-		data.d);
+	LOG_ERROR(
+			"NOTE: not support non-standard(in c99 but not in c11) "
+			"double specifier(lf)");
+	// LOG_ERROR("double(lf): %lf", data.d);
+	LOG_INFO(" ");
 }
 
 int main()
