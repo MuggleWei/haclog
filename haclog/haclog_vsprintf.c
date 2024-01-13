@@ -243,6 +243,12 @@ static int haclog_printf_spec_fillup_ft_fFeEgGaA(haclog_printf_spec_t *spec)
 	case HACLOG_PRINTF_LENGTH_L: {
 		spec->fmt_type = HACLOG_FT_LONG_DOUBLE;
 	} break;
+	case HACLOG_PRINTF_LENGTH_l: {
+		// NOTE:
+		//   HACLOG_PRINTF_LENGTH_l(%lf) is no longer part of the standard
+		haclog_debug_break();
+		return HACLOG_ERR_PRINTF_TYPE;
+	} break;
 	default: {
 		haclog_debug_break();
 		return HACLOG_ERR_PRINTF_TYPE;
@@ -401,7 +407,7 @@ static int haclog_printf_spec_fillup(haclog_printf_primitive_t *primitive)
 		} else {
 			if (*(fmt + 1) == '%') {
 				// %%
-				++fmt;
+				fmt += 2;
 				continue;
 			}
 
@@ -815,7 +821,7 @@ int haclog_printf_num_params(const char *fmt, unsigned int *num_params,
 		} else {
 			if (*(fmt + 1) == '%') {
 				// %%
-				++fmt;
+				fmt += 2;
 				continue;
 			}
 
