@@ -407,7 +407,7 @@ static int haclog_printf_spec_fillup(haclog_printf_primitive_t *primitive)
 		} else {
 			if (*(fmt + 1) == '%') {
 				// %%
-				++fmt;
+				fmt += 2;
 				continue;
 			}
 
@@ -821,7 +821,7 @@ int haclog_printf_num_params(const char *fmt, unsigned int *num_params,
 		} else {
 			if (*(fmt + 1) == '%') {
 				// %%
-				++fmt;
+				fmt += 2;
 				continue;
 			}
 
