@@ -18,6 +18,7 @@ haclog_context_t *haclog_context_get()
 		.handlers = { NULL },
 		.bytes_buf_size = HACLOG_DEFAULT_BYTES_BUF_SIZE,
 		.msg_buf_size = HACLOG_DEFAULT_MSG_BUF_SIZE,
+		.before_run_cb = NULL,
 	};
 	return &s_ctx;
 }
@@ -95,4 +96,10 @@ void haclog_context_set_msg_buf_size(unsigned long bufsize)
 	}
 	haclog_context_t *ctx = haclog_context_get();
 	ctx->msg_buf_size = bufsize;
+}
+
+void haclog_context_set_before_run_cb(haclog_before_run_callback fn)
+{
+	haclog_context_t *ctx = haclog_context_get();
+	ctx->before_run_cb = fn;
 }

@@ -117,12 +117,24 @@ void output_type_and_specifiers()
 	LOG_INFO(" ");
 }
 
+void before_run()
+{
+	fprintf(stdout, "before haclog backend run\n"
+					"user can do something interests here\n"
+					"e.g.\n"
+					"  * set CPU affinity\n"
+					"  * wait something completed\n"
+					"NOTE: do not use log in before run!!!\n"
+					"\n");
+}
+
 int main()
 {
 	add_console_handler();
 	add_file_handler();
 	add_file_rotate_handler();
 	add_file_time_rot_handler();
+	haclog_context_set_before_run_cb(before_run);
 	haclog_backend_run();
 
 	haclog_thread_context_init();
