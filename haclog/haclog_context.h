@@ -23,15 +23,21 @@ typedef struct haclog_thread_context_list {
 	haclog_thread_context_t *th_ctx;
 } haclog_thread_context_list_t;
 
+/**
+ * @brief before haclog backend run callback
+ */
+typedef void (*haclog_before_run_callback)();
+
 typedef struct haclog_context {
 	haclog_spinlock_t spinlock; //!< context spinlock
-	haclog_thread_context_list_t th_ctx_add_list; //!< add list 
+	haclog_thread_context_list_t th_ctx_add_list; //!< add list
 	haclog_thread_context_list_t th_ctx_head; //!< thread context list head
 	unsigned int n_handler; //!< number of handler
 	int level; //!< min level of handler
 	haclog_handler_t *handlers[8]; //!< handler array
 	unsigned long bytes_buf_size; //!< bytes buffer size of thread context
 	unsigned long msg_buf_size; //!< buffer size of log write
+	haclog_before_run_callback before_run_cb; //!< before backend run callback
 } haclog_context_t;
 
 /**
@@ -97,6 +103,14 @@ unsigned long haclog_context_get_bytes_buf_size();
  */
 HACLOG_EXPORT
 void haclog_context_set_msg_buf_size(unsigned long bufsize);
+
+/**
+ * @brief set before backend run callback
+ *
+ * @param fn  callback function
+ */
+HACLOG_EXPORT
+void haclog_context_set_before_run_cb(haclog_before_run_callback fn);
 
 HACLOG_EXTERN_C_END
 

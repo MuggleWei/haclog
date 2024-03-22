@@ -95,6 +95,10 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 
 	haclog_context_t *ctx = haclog_context_get();
 
+	if (ctx->before_run_cb) {
+		ctx->before_run_cb();
+	}
+
 	unsigned long bufsize = ctx->msg_buf_size;
 	if (bufsize < 2048) {
 		bufsize = 2048;
