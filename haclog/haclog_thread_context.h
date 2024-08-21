@@ -53,6 +53,17 @@ void haclog_thread_context_cleanup();
 HACLOG_EXPORT
 haclog_thread_context_t *haclog_thread_context_get();
 
+/**
+ * @brief set is allow to auto init thread context in first call
+ *
+ * @param flag  1 - enable; 0 - disable
+ *
+ * @NOTE
+ *     - by default, auto init is enable
+ */
+HACLOG_EXPORT
+void haclog_thread_context_set_auto_init(int flag);
+
 HACLOG_EXTERN_C_END
 
 #endif // !HACLOG_THREAD_CONTEXT_H_
