@@ -100,8 +100,8 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 	}
 
 	unsigned long bufsize = ctx->msg_buf_size;
-	if (bufsize < 2048) {
-		bufsize = 2048;
+	if (bufsize < 8) {
+		bufsize = 8;
 	}
 
 	char *buf = (char *)malloc(bufsize);

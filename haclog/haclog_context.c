@@ -91,9 +91,9 @@ unsigned long haclog_context_get_bytes_buf_size()
 
 void haclog_context_set_msg_buf_size(unsigned long bufsize)
 {
-	if (bufsize < HACLOG_DEFAULT_MSG_BUF_SIZE) {
-		bufsize = HACLOG_DEFAULT_MSG_BUF_SIZE;
-	}
+	// if (bufsize < HACLOG_DEFAULT_MSG_BUF_SIZE) {
+	//     bufsize = HACLOG_DEFAULT_MSG_BUF_SIZE;
+	// }
 	haclog_context_t *ctx = haclog_context_get();
 	ctx->msg_buf_size = bufsize;
 }
