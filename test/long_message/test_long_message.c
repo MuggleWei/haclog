@@ -81,7 +81,12 @@ void test_long_message()
 	long n = ftell(fp);
 	fclose(fp);
 
+#if HACLOG_PLATFORM_WINDOWS
+	// NOTE: in windows, new line is '\r''\n'
+	TEST_ASSERT_TRUE(n - 1 <= LINE_SIZE);
+#else
 	TEST_ASSERT_TRUE(n <= LINE_SIZE);
+#endif
 }
 
 int main()
