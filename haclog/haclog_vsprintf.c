@@ -1373,8 +1373,29 @@ int haclog_printf_primitive_format(haclog_bytes_buffer_t *bytes_buf,
 		} break;
 		}
 
+		// NOTE:
+		//   snprintf return the number of caracters would have been written to
+		//   the fianl string **if enough space had been available**
+		//   so need to manual compare n and buf_remain!!!
+		//
+		// e.g.
+		//   char buf[4];
+		//   memset(buf, 0, sizeof(buf));
+		//   int n = snprintf(buf, sizeof(buf), "%s", "0123456789");
+		//
+		//   * the result:
+		//     buf = "012\0"
+		//     n = 10
+		if (n > buf_remain) {
+			n = buf_remain;
+		}
+
 		total_bytes += n;
 		buf_remain -= n;
+
+		if (buf_remain <= 0) {
+			break;
+		}
 	}
 
 	if (fmt_pos != primitive->fmt_len) {
