@@ -222,3 +222,41 @@ int haclog_os_rename(const char *src, const char *dst)
 }
 
 #endif
+
+FILE *haclog_os_fopen(const char *filepath, const char *mode)
+{
+	int ret = 0;
+	const char *abs_filepath = NULL;
+	char tmp_path[HACLOG_MAX_PATH];
+	if (haclog_path_isabs(filepath)) {
+		abs_filepath = filepath;
+	} else {
+		char cur_path[HACLOG_MAX_PATH];
+		ret = haclog_os_curdir(cur_path, sizeof(cur_path));
+		if (ret != 0) {
+			return NULL;
+		}
+
+		ret = haclog_path_join(cur_path, filepath, tmp_path, sizeof(tmp_path));
+		if (ret != 0) {
+			return NULL;
+		}
+
+		abs_filepath = tmp_path;
+	}
+
+	char file_dir[HACLOG_MAX_PATH];
+	ret = haclog_path_dirname(abs_filepath, file_dir, sizeof(file_dir));
+	if (ret != 0) {
+		return NULL;
+	}
+
+	if (!haclog_path_exists(file_dir)) {
+		ret = haclog_os_mkdir(file_dir);
+		if (ret != 0) {
+			return NULL;
+		}
+	}
+
+	return fopen(abs_filepath, mode);
+}

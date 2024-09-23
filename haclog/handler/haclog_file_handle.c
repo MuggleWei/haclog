@@ -90,23 +90,10 @@ int haclog_file_handler_init(haclog_file_handler_t *handler,
 			return ret;
 		}
 
-		char log_dir[HACLOG_MAX_PATH];
-		ret = haclog_path_dirname(log_path, log_dir, sizeof(log_dir));
-		if (ret != 0) {
-			return ret;
-		}
-
-		if (!haclog_path_exists(log_dir)) {
-			ret = haclog_os_mkdir(log_dir);
-			if (ret != 0) {
-				return ret;
-			}
-		}
-
 		abs_filepath = log_path;
 	}
 
-	handler->fp = fopen(abs_filepath, mode);
+	handler->fp = haclog_os_fopen(abs_filepath, mode);
 	if (handler->fp == NULL) {
 		return HACLOG_ERR_SYS_CALL;
 	}

@@ -7,6 +7,12 @@
 | 2024-03-22 | v0.2.0 |
 | 2024-08-21 | v0.3.0 |
 | 2024-09-05 | v0.3.1 |
+| 2024-09-23 | v0.4.0 |
+
+---
+## v0.4.0
+* fix: failed automatically mkdir when log filepath is abs filepath
+* add: add haclog_os_fopen
 
 ---
 ## v0.3.1

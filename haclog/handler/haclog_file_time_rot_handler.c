@@ -118,7 +118,7 @@ haclog_file_time_rot_handler_rotate(haclog_file_time_rot_handler_t *handler)
 		return HACLOG_ERR_ARGUMENTS;
 	}
 
-	handler->fp = fopen(buf, "ab+");
+	handler->fp = haclog_os_fopen(buf, "ab+");
 	if (handler->fp == NULL) {
 		return HACLOG_ERR_SYS_CALL;
 	}
@@ -225,24 +225,11 @@ int haclog_file_time_rotate_handler_init(
 			return ret;
 		}
 
-		char log_dir[HACLOG_MAX_PATH];
-		ret = haclog_path_dirname(log_path, log_dir, sizeof(log_dir));
-		if (ret != 0) {
-			return ret;
-		}
-
-		if (!haclog_path_exists(log_dir)) {
-			ret = haclog_os_mkdir(log_dir);
-			if (ret != 0) {
-				return ret;
-			}
-		}
-
 		abs_filepath = log_path;
 	}
 
 	strncpy(handler->filepath, abs_filepath, sizeof(handler->filepath) - 1);
-	// handler already memset, the line below just for get rid of gcc strncpy 
+	// handler already memset, the line below just for get rid of gcc strncpy
 	// truncated warning
 	handler->filepath[sizeof(handler->filepath) - 1] = '\0';
 
