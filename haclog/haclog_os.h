@@ -12,6 +12,7 @@
 #define HACLOG_OS_H_
 
 #include "haclog/haclog_macro.h"
+#include <stdio.h>
 
 HACLOG_EXTERN_C_BEGIN
 
@@ -87,6 +88,19 @@ int haclog_os_rmdir(const char *path);
  */
 HACLOG_EXPORT
 int haclog_os_rename(const char *src, const char *dst);
+
+/**
+ * @brief open file, if dir is not exists, create dir automatically
+ *
+ * @param filepath  file path
+ * @param mode      open file mode
+ *
+ * @return
+ *     - on success, return FILE pointer
+ *     - on failed, NULL is returned
+ */
+HACLOG_EXPORT
+FILE* haclog_os_fopen(const char *filepath, const char *mode);
 
 HACLOG_EXTERN_C_END
 

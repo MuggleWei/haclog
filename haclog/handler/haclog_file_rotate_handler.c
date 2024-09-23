@@ -78,7 +78,7 @@ haclog_file_rotate_handler_after_write(haclog_handler_t *base_handler,
 
 		if (handler->offset >= handler->max_bytes) {
 			if (haclog_file_rotate_handler_rotate(handler) != 0) {
-				fprintf(stderr, "failed rotate log handler");
+				fprintf(stderr, "failed rotate log handler\n");
 			}
 		}
 	}
@@ -155,23 +155,10 @@ int haclog_file_rotate_handler_init(haclog_file_rotate_handler_t *handler,
 			return ret;
 		}
 
-		char log_dir[HACLOG_MAX_PATH];
-		ret = haclog_path_dirname(log_path, log_dir, sizeof(log_dir));
-		if (ret != 0) {
-			return ret;
-		}
-
-		if (!haclog_path_exists(log_dir)) {
-			ret = haclog_os_mkdir(log_dir);
-			if (ret != 0) {
-				return ret;
-			}
-		}
-
 		abs_filepath = log_path;
 	}
 
-	handler->fp = fopen(abs_filepath, "ab+");
+	handler->fp = haclog_os_fopen(abs_filepath, "ab+");
 	if (handler->fp == NULL) {
 		return HACLOG_ERR_SYS_CALL;
 	}
