@@ -17,7 +17,7 @@ int haclog_os_process_path(char *path, unsigned int size)
 	}
 
 	// convert to utf8
-	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL,
+	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size, NULL,
 							  FALSE);
 	if (ret == 0) {
 		return HACLOG_ERR_SYS_CALL;
@@ -36,7 +36,7 @@ int haclog_os_curdir(char *path, unsigned int size)
 	}
 
 	// convert to utf8
-	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size - 1, NULL,
+	ret = WideCharToMultiByte(CP_UTF8, 0, unicode_buf, -1, path, size, NULL,
 							  FALSE);
 	if (ret == 0) {
 		return HACLOG_ERR_SYS_CALL;
@@ -47,7 +47,28 @@ int haclog_os_curdir(char *path, unsigned int size)
 
 int haclog_os_chdir(const char *path)
 {
-	return SetCurrentDirectoryA(path) ? 0 : HACLOG_ERR_SYS_CALL;
+	// convert to unicode characters
+	WCHAR unicode_buf[HACLOG_MAX_PATH];
+	int ret =
+		MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return HACLOG_ERR_SYS_CALL;
+	}
+
+	return SetCurrentDirectoryW(unicode_buf) ? 0 : HACLOG_ERR_SYS_CALL;
+}
+
+static BOOL haclog_windows_create_dir_utf8(const char *path)
+{
+	// convert to unicode characters
+	WCHAR unicode_buf[HACLOG_MAX_PATH];
+	int ret =
+		MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return FALSE;
+	}
+
+	return CreateDirectoryW(unicode_buf, NULL);
 }
 
 int haclog_os_mkdir(const char *path)
@@ -76,7 +97,7 @@ int haclog_os_mkdir(const char *path)
 
 			if (strlen(_path) == 2 && _path[1] == ':') {
 				// don't need to create windows drive letter
-			} else if (!CreateDirectoryA(_path, NULL)) {
+			} else if (!haclog_windows_create_dir_utf8(_path)) {
 				DWORD err = GetLastError();
 				if (err != ERROR_ALREADY_EXISTS) {
 					return HACLOG_ERR_SYS_CALL;
@@ -89,7 +110,7 @@ int haclog_os_mkdir(const char *path)
 
 	if (strlen(_path) == 2 && _path[1] == ':') {
 		// don't need to create windows drive letter
-	} else if (!CreateDirectoryA(_path, NULL)) {
+	} else if (!haclog_windows_create_dir_utf8(_path)) {
 		DWORD err = GetLastError();
 		if (err != ERROR_ALREADY_EXISTS) {
 			return HACLOG_ERR_SYS_CALL;
@@ -101,17 +122,48 @@ int haclog_os_mkdir(const char *path)
 
 int haclog_os_remove(const char *path)
 {
-	return DeleteFileA(path) ? 0 : HACLOG_ERR_SYS_CALL;
+	// convert to unicode characters
+	WCHAR unicode_buf[HACLOG_MAX_PATH];
+	int ret =
+		MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return HACLOG_ERR_SYS_CALL;
+	}
+
+	return DeleteFileW(unicode_buf) ? 0 : HACLOG_ERR_SYS_CALL;
 }
 
 int haclog_os_rmdir(const char *path)
 {
-	return RemoveDirectoryA(path) ? 0 : HACLOG_ERR_SYS_CALL;
+	// convert to unicode characters
+	WCHAR unicode_buf[HACLOG_MAX_PATH];
+	int ret =
+		MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return HACLOG_ERR_SYS_CALL;
+	}
+
+	return RemoveDirectoryW(unicode_buf) ? 0 : HACLOG_ERR_SYS_CALL;
 }
 
 int haclog_os_rename(const char *src, const char *dst)
 {
-	return rename(src, dst) == 0 ? 0 : HACLOG_ERR_SYS_CALL;
+	// convert to unicode characters
+	int ret = 0;
+	WCHAR unicode_src[HACLOG_MAX_PATH];
+	WCHAR unicode_dst[HACLOG_MAX_PATH];
+	ret =
+		MultiByteToWideChar(CP_UTF8, 0, src, -1, unicode_src, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return HACLOG_ERR_SYS_CALL;
+	}
+	ret =
+		MultiByteToWideChar(CP_UTF8, 0, dst, -1, unicode_dst, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return HACLOG_ERR_SYS_CALL;
+	}
+
+	return _wrename(unicode_src, unicode_dst) == 0 ? 0 : HACLOG_ERR_SYS_CALL;
 }
 
 #else
@@ -258,5 +310,23 @@ FILE *haclog_os_fopen(const char *filepath, const char *mode)
 		}
 	}
 
+#if HACLOG_PLATFORM_WINDOWS
+	// convert to unicode characters
+	WCHAR unicode_abs_filepath[HACLOG_MAX_PATH];
+	ret = MultiByteToWideChar(CP_UTF8, 0, abs_filepath, -1,
+							  unicode_abs_filepath, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return NULL;
+	}
+
+	WCHAR unicode_mode[16];
+	ret = MultiByteToWideChar(CP_UTF8, 0, mode, -1, unicode_mode, 16);
+	if (ret == 0) {
+		return NULL;
+	}
+
+	return _wfopen(unicode_abs_filepath, unicode_mode);
+#else
 	return fopen(abs_filepath, mode);
+#endif
 }
