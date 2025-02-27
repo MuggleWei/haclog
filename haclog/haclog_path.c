@@ -209,7 +209,10 @@ int haclog_path_exists(const char *path)
 #if HACLOG_PLATFORM_WINDOWS
 	// convert to utf16 characters
 	WCHAR unicode_buf[HACLOG_MAX_PATH] = { 0 };
-	MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, HACLOG_MAX_PATH);
+	int ret = MultiByteToWideChar(CP_UTF8, 0, path, -1, unicode_buf, HACLOG_MAX_PATH);
+	if (ret == 0) {
+		return 0;
+	}
 
 	// get file attributes
 	DWORD attr = GetFileAttributesW(unicode_buf);
