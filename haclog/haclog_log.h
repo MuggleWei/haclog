@@ -74,22 +74,22 @@ static_assert(0, "haclog can't find c or c++ version");
 	} while (0)
 
 #ifdef __cplusplus
-	#define HACLOG_LOG_DEFAULT(level, format, ...)                            \
-		do {                                                                  \
-			haclog_thread_context_t *th_ctx = haclog_thread_context_get();    \
-			if (th_ctx) {                                                     \
-				haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;         \
-				haclog_constexpr const char *const_fmt = format;              \
-				HACLOG_SERIALIZE(bytes_buf, level, const_fmt, ##__VA_ARGS__); \
-			}                                                                 \
+	#define HACLOG_LOG_DEFAULT(lvl, format, ...)                            \
+		do {                                                                \
+			haclog_thread_context_t *th_ctx = haclog_thread_context_get();  \
+			if (th_ctx && (haclog_context_get()->level <= lvl)) {           \
+				haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;       \
+				haclog_constexpr const char *const_fmt = format;            \
+				HACLOG_SERIALIZE(bytes_buf, lvl, const_fmt, ##__VA_ARGS__); \
+			}                                                               \
 		} while (0)
 #else
-	#define HACLOG_LOG_DEFAULT(level, format, ...)                         \
+	#define HACLOG_LOG_DEFAULT(lvl, format, ...)                           \
 		do {                                                               \
 			haclog_thread_context_t *th_ctx = haclog_thread_context_get(); \
-			if (th_ctx) {                                                  \
+			if (th_ctx && (haclog_context_get()->level <= lvl)) {          \
 				haclog_bytes_buffer_t *bytes_buf = th_ctx->bytes_buf;      \
-				HACLOG_SERIALIZE(bytes_buf, level, format, ##__VA_ARGS__); \
+				HACLOG_SERIALIZE(bytes_buf, lvl, format, ##__VA_ARGS__);   \
 			}                                                              \
 		} while (0)
 #endif
