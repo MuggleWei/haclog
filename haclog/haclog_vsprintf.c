@@ -749,6 +749,11 @@ void haclog_printf_primitive_show(haclog_printf_primitive_t *primitive)
 haclog_printf_primitive_t *
 haclog_printf_primitive_gen(const char *fmt, const haclog_printf_loc_t *loc)
 {
+	haclog_context_t *ctx = haclog_context_get();
+	if (loc->level < ctx->level) {
+		return NULL;
+	}
+
 	haclog_printf_primitive_t *primitive = NULL;
 	unsigned int num_params = 0;
 	unsigned int num_args = 0;
@@ -962,6 +967,9 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
 									   const char *fmt_str, ...)
 {
+	if(primitive == NULL) {
+		return;
+	}
 	haclog_context_t *ctx = haclog_context_get();
 	if (primitive->loc.level < ctx->level) {
 		return;
