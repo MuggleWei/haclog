@@ -962,10 +962,11 @@ void haclog_printf_primitive_serialize(haclog_bytes_buffer_t *bytes_buf,
 									   haclog_printf_primitive_t *primitive,
 									   const char *fmt_str, ...)
 {
-	haclog_context_t *ctx = haclog_context_get();
-	if (primitive->loc.level < ctx->level) {
-		return;
-	}
+	// NOTE: log level filter already move to HACLOG_LOG_DEFAULT
+	// haclog_context_t *ctx = haclog_context_get();
+	// if (primitive->loc.level < ctx->level) {
+	//     return;
+	// }
 
 	const haclog_atomic_int hdr_size =
 		(haclog_atomic_int)sizeof(haclog_serialize_hdr_t);
