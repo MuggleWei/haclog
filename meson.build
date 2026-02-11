@@ -1,8 +1,5 @@
 project('haclog', 'c',
-  version: run_command('python', '-c', '''
-with open("version.txt", "r") as f:
-    print("{}".format(f.readline().strip("\n")))
-    ''', check: true).stdout().strip(),
+  version: files('version.txt'),
   license: 'MIT',
   license_files: ['LICENSE'],
   meson_version: '>= 1.1.0')
@@ -30,6 +27,10 @@ message('# haclog HACLOG_BUILD_BENCHMARK:',
 message('# haclog HACLOG_BUILD_GBENCHMARK:',
   get_option('HACLOG_BUILD_GBENCHMARK'))
 message('--------------------------------')
+
+python_mod = import('python')
+python_inst = python_mod.find_installation('python3')
+python_exe = python_inst.full_path()
 
 ################################
 # configure
@@ -67,7 +68,7 @@ configure_file(
 # NOTE:
 # configure_file output can't contain a path segment, so need move gen 
 # file manually
-run_command('python', '-c',
+run_command(python_exe, '-c',
   '''
 import os;
 build_dir = "@0@";
@@ -101,10 +102,10 @@ for filename in dirs:
 # haclog
 ################################
 
-cmd_src_c = run_command(
-  'python', '-c', func_glob.format('haclog', 'c', 'True'), check: true)
-cmd_src_h = run_command(
-  'python', '-c', func_glob.format('haclog', 'h', 'True'), check: true)
+cmd_src_c = run_command(python_exe,
+  '-c', func_glob.format('haclog', 'c', 'True'), check: true)
+cmd_src_h = run_command(python_exe,
+  '-c', func_glob.format('haclog', 'h', 'True'), check: true)
 haclog_src_c = cmd_src_c.stdout().strip().split('\n')
 haclog_src_h = cmd_src_h.stdout().strip().split('\n')
 haclog_gen_h = join_paths(
@@ -132,14 +133,14 @@ pkg.generate(libhaclog)
 if get_option('HACLOG_BUILD_TESTING')
   unity_test_dep = dependency('unity', required: true)
 
-  cmd_listdir_test = run_command(
-    'python', '-c', func_listdir.format('test'), check: true)
+  cmd_listdir_test = run_command(python_exe,
+    '-c', func_listdir.format('test'), check: true)
   test_dirs = cmd_listdir_test.stdout().strip().split('\n')
 
   foreach test_dir : test_dirs
     test_filepath = join_paths('test', test_dir).replace('\\', '/')
-    cmd_test_src_c = run_command(
-      'python', '-c', func_glob.format(test_filepath, 'c', 'True'),
+    cmd_test_src_c = run_command(python_exe,
+       '-c', func_glob.format(test_filepath, 'c', 'True'),
       check: true)
     test_src_c = cmd_test_src_c.stdout().strip().split('\n')
     test_incdir = include_directories(test_filepath, '.', 'gen')
@@ -156,14 +157,14 @@ endif
 ################################
 
 if get_option('HACLOG_BUILD_EXAMPLE')
-  cmd_listdir_example = run_command(
-    'python', '-c', func_listdir.format('example'), check: true)
+  cmd_listdir_example = run_command(python_exe,
+    '-c', func_listdir.format('example'), check: true)
   example_dirs = cmd_listdir_example.stdout().strip().split('\n')
 
   foreach example_dir : example_dirs
     example_filepath = join_paths('example', example_dir).replace('\\', '/')
-    cmd_example_src_c = run_command(
-      'python', '-c', func_glob.format(example_filepath, 'c', 'True'),
+    cmd_example_src_c = run_command(python_exe,
+      '-c', func_glob.format(example_filepath, 'c', 'True'),
       check: true)
     example_src_c = cmd_example_src_c.stdout().strip().split('\n')
     example_incdir = include_directories(example_filepath, '.', 'gen')
@@ -178,14 +179,14 @@ endif
 ################################
 
 if get_option('HACLOG_BUILD_BENCHMARK')
-  cmd_listdir_benchmark = run_command(
-    'python', '-c', func_listdir.format('benchmark'), check: true)
+  cmd_listdir_benchmark = run_command(python_exe,
+    '-c', func_listdir.format('benchmark'), check: true)
   benchmark_dirs = cmd_listdir_benchmark.stdout().strip().split('\n')
 
   foreach benchmark_dir : benchmark_dirs
     benchmark_filepath = join_paths('benchmark', benchmark_dir).replace('\\', '/')
-    cmd_benchmark_src_c = run_command(
-      'python', '-c', func_glob.format(benchmark_filepath, 'c', 'True'),
+    cmd_benchmark_src_c = run_command(python_exe,
+      '-c', func_glob.format(benchmark_filepath, 'c', 'True'),
       check: true)
     benchmark_src_c = cmd_benchmark_src_c.stdout().strip().split('\n')
     benchmark_incdir = include_directories(benchmark_filepath, '.', 'gen')
