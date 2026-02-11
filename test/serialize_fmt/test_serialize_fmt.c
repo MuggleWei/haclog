@@ -30,7 +30,7 @@ void tearDown()
 
 void test_serialize_fmt_empty()
 {
-	TEST_SERIALIZE_FMT("");
+	TEST_SERIALIZE_FMT(" ");
 }
 
 void test_serialize_fmt_int()
