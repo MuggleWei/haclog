@@ -192,6 +192,7 @@ if get_option('HACLOG_BUILD_BENCHMARK')
     benchmark_incdir = include_directories(benchmark_filepath, '.', 'gen')
     executable('benchmark_' + benchmark_dir, benchmark_src_c,
       include_directories: benchmark_incdir,
+      link_args: ['-lm'],
       link_with: libhaclog)
   endforeach
 endif
