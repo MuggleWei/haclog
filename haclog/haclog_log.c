@@ -135,7 +135,7 @@ static haclog_thread_ret_t s_haclog_backend_func(void *args)
 	return 0;
 }
 
-void haclog_backend_run()
+void haclog_backend_run(void)
 {
 	haclog_thread_t th_backend;
 	haclog_thread_create(&th_backend, s_haclog_backend_func, NULL);

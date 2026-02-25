@@ -151,7 +151,7 @@ static_assert(0, "haclog can't find c or c++ version");
  * @brief run backend
  */
 HACLOG_EXPORT
-void haclog_backend_run();
+void haclog_backend_run(void);
 
 HACLOG_EXTERN_C_END
 

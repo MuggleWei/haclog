@@ -26,7 +26,7 @@ typedef struct haclog_thread_context_list {
 /**
  * @brief before haclog backend run callback
  */
-typedef void (*haclog_before_run_callback)();
+typedef void (*haclog_before_run_callback)(void);
 
 typedef struct haclog_context {
 	haclog_spinlock_t spinlock; //!< context spinlock
@@ -46,7 +46,7 @@ typedef struct haclog_context {
  * @return haclog context
  */
 HACLOG_EXPORT
-haclog_context_t *haclog_context_get();
+haclog_context_t *haclog_context_get(void);
 
 /**
  * @brief insert thread context into context
@@ -94,7 +94,7 @@ void haclog_context_set_bytes_buf_size(unsigned long bufsize);
  * @return bytes buffer default size
  */
 HACLOG_EXPORT
-unsigned long haclog_context_get_bytes_buf_size();
+unsigned long haclog_context_get_bytes_buf_size(void);
 
 /**
  * @brief set output message buffer size

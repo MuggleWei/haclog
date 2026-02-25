@@ -29,10 +29,10 @@ typedef struct haclog_stacktrace {
  * @brief output stack trace info to stdout
  */
 HACLOG_EXPORT
-void haclog_print_stacktrace();
+void haclog_print_stacktrace(void);
 
 HACLOG_EXPORT
-void haclog_debug_break();
+void haclog_debug_break(void);
 
 HACLOG_EXTERN_C_END
 

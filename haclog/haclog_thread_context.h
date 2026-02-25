@@ -37,13 +37,13 @@ typedef struct haclog_thread_context {
  *   - otherwise, return NULL and set haclog last error
  */
 HACLOG_EXPORT
-haclog_thread_context_t *haclog_thread_context_init();
+haclog_thread_context_t *haclog_thread_context_init(void);
 
 /**
  * @brief cleanup thread context
  */
 HACLOG_EXPORT
-void haclog_thread_context_cleanup();
+void haclog_thread_context_cleanup(void);
 
 /**
  * @brief get haclog thread context
@@ -51,7 +51,7 @@ void haclog_thread_context_cleanup();
  * @return haclog current thread context
  */
 HACLOG_EXPORT
-haclog_thread_context_t *haclog_thread_context_get();
+haclog_thread_context_t *haclog_thread_context_get(void);
 
 /**
  * @brief set is allow to auto init thread context in first call

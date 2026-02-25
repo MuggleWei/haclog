@@ -80,7 +80,7 @@ int haclog_thread_detach(haclog_thread_t *thread)
 	return pthread_detach(thread->th) == 0 ? 0 : HACLOG_ERR_SYS_CALL;
 }
 
-haclog_thread_id haclog_thread_readable_id()
+haclog_thread_id haclog_thread_readable_id(void)
 {
 	#if HACLOG_PLATFORM_LINUX
 	return syscall(SYS_gettid);
@@ -97,12 +97,12 @@ haclog_thread_id haclog_thread_readable_id()
 	#endif
 }
 
-int haclog_thread_hardware_concurrency()
+int haclog_thread_hardware_concurrency(void)
 {
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
-void haclog_thread_yield()
+void haclog_thread_yield(void)
 {
 	sched_yield();
 }

@@ -33,7 +33,7 @@ enum {
  * @return  error code
  */
 HACLOG_EXPORT
-unsigned int haclog_last_error();
+unsigned int haclog_last_error(void);
 
 /**
  * @brief set haclog last error

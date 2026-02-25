@@ -7,13 +7,13 @@
 
 static haclog_thread_local haclog_thread_context_t *s_haclog_thread_ctx = NULL;
 
-int *haclog_thread_context_auto_init_flag()
+int *haclog_thread_context_auto_init_flag(void)
 {
 	static int s_thread_ctx_auto_init = 1;
 	return &s_thread_ctx_auto_init;
 }
 
-haclog_thread_context_t *haclog_thread_context_init()
+haclog_thread_context_t *haclog_thread_context_init(void)
 {
 	if (s_haclog_thread_ctx) {
 		return s_haclog_thread_ctx;
@@ -49,7 +49,7 @@ haclog_thread_context_t *haclog_thread_context_init()
 	return s_haclog_thread_ctx;
 }
 
-void haclog_thread_context_cleanup()
+void haclog_thread_context_cleanup(void)
 {
 	if (s_haclog_thread_ctx) {
 		if (s_haclog_thread_ctx->bytes_buf) {
@@ -70,7 +70,7 @@ void haclog_thread_context_cleanup()
 	}
 }
 
-haclog_thread_context_t *haclog_thread_context_get()
+haclog_thread_context_t *haclog_thread_context_get(void)
 {
 	if (s_haclog_thread_ctx == NULL) {
 		int *flag = haclog_thread_context_auto_init_flag();

@@ -145,7 +145,7 @@ int haclog_thread_detach(haclog_thread_t *thread);
  * @return current thread readable id
  */
 HACLOG_EXPORT
-haclog_thread_id haclog_thread_readable_id();
+haclog_thread_id haclog_thread_readable_id(void);
 
 /**
  * @brief get the number of concurrent threads supported by the implementation
@@ -153,13 +153,13 @@ haclog_thread_id haclog_thread_readable_id();
  * @return number of concurrent threads supported
  */
 HACLOG_EXPORT
-int haclog_thread_hardware_concurrency();
+int haclog_thread_hardware_concurrency(void);
 
 /**
  * @brief calling thread to yield execution and relinquish the CPU
  */
 HACLOG_EXPORT
-void haclog_thread_yield();
+void haclog_thread_yield(void);
 
 HACLOG_EXTERN_C_END
 

@@ -3,7 +3,7 @@
 
 static haclog_thread_local unsigned int s_haclog_err = 0;
 
-unsigned int haclog_last_error()
+unsigned int haclog_last_error(void)
 {
 	return s_haclog_err;
 }

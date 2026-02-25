@@ -1,13 +1,13 @@
+#include <stdlib.h>
 #include "haclog_context.h"
 #include "haclog/haclog_err.h"
 #include "haclog/haclog_sleep.h"
 #include "haclog/haclog_thread.h"
-#include <stdlib.h>
 
 #define HACLOG_DEFAULT_BYTES_BUF_SIZE 1024 * 1024
 #define HACLOG_DEFAULT_MSG_BUF_SIZE 2048
 
-haclog_context_t *haclog_context_get()
+haclog_context_t *haclog_context_get(void)
 {
 	static haclog_context_t s_ctx = {
 		.spinlock = HACLOG_SPINLOCK_STATUS_UNLOCK,
@@ -83,7 +83,7 @@ void haclog_context_set_bytes_buf_size(unsigned long bufsize)
 	ctx->bytes_buf_size = bufsize;
 }
 
-unsigned long haclog_context_get_bytes_buf_size()
+unsigned long haclog_context_get_bytes_buf_size(void)
 {
 	haclog_context_t *ctx = haclog_context_get();
 	return ctx->bytes_buf_size;

@@ -1,10 +1,11 @@
-#include "haclog_stacktrace.h"
-#include "haclog/haclog_sleep.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
 #include <assert.h>
+#include "haclog_stacktrace.h"
+#include "haclog/haclog_sleep.h"
+
 #if HACLOG_PLATFORM_WINDOWS
 	#if !defined(NDEBUG)
 		#include <windows.h>
@@ -17,7 +18,7 @@
 	#endif
 #endif
 
-void haclog_print_stacktrace()
+void haclog_print_stacktrace(void)
 {
 #if HACLOG_PLATFORM_WINDOWS
 	#if !defined(NDEBUG)
@@ -59,7 +60,7 @@ void haclog_print_stacktrace()
 #endif // HACLOG_PLATFORM_WINDOWS
 }
 
-void haclog_debug_break()
+void haclog_debug_break(void)
 {
 #if !defined(NDEBUG)
 	haclog_nsleep(5 * 1000 * 1000);
