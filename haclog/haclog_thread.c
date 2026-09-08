@@ -40,6 +40,11 @@ int haclog_thread_join(haclog_thread_t *thread)
 
 int haclog_thread_detach(haclog_thread_t *thread)
 {
+	if (!CloseHandle(thread->handle))
+	{
+		return HACLOG_ERR_SYS_CALL;
+	}
+
 	return 0;
 }
 
